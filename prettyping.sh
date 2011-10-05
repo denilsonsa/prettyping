@@ -1,4 +1,9 @@
 #!/bin/sh
+#
+# Written by Denilson Figueiredo de Sa <denilsonsa@gmail.com>
+# 2008-01-16 - Updated version. Removed [[ bash-ism. Now this script
+#              also works on dash.
+# 2008-01-12 - First version written and released.
 
 MYNAME=`basename "$0"`
 
@@ -16,24 +21,46 @@ EOF
 }
 
 
-if [[ $1 == "" || $1 == -h || $1 == --help ]] ; then
+if [ "$1" = "" -o "$1" = "-h" -o "$1" = "--help" ]; then
 	print_help
 	exit
 fi
 
-trap 'pkill -2 ping ; exit 1' 2
-#trap 'pkill -6 ping' 6
-#trap 'echo I am trapped' 1 2 3 6 13 15
-#trap 'echo I am trapped  1' 1
-#trap 'echo I am trapped  2' 2
-#trap 'echo I am trapped  3' 3
-#trap 'echo I am trapped  6' 6
-#trap 'echo I am trapped 13' 13
-#trap 'echo I am trapped 15' 15
-#while : ; do : ; done
-
 export LC_ALL=C
-ping "$@" | awk '
+
+# Warning! Ugly code ahead!
+# The code is so ugly that the comments explaining it are
+# bigger than the code itself!
+#
+# Suppose this:
+#
+#   cmd_a | cmd_b &
+#
+# I need the PID of cmd_a. How can I get it?
+# In bash, $! will give me the PID of cmd_b.
+#
+# So, I came up with this ugly solution: open a subshell, like this:
+#
+# (
+# 	cmd_a &
+# 	echo "This is the PID I want $!"
+# 	wait
+# ) | cmd_b
+#
+# I don't know why
+
+
+# Ignore Ctrl+C here.
+# If I don't do this, this shell script is killed before
+# ping and awk can finish their work.
+trap '' 2
+
+# Now the ugly code. Damn, bash sucks! :-P
+(
+	ping "$@" &
+	trap "kill -2 $! ; exit 1" 2  # Catch Ctrl+C here
+	wait
+) | awk '
 BEGIN{
 	last_seq = 0
 	FS = "="
@@ -51,18 +78,14 @@ BEGIN{
 		seq = $2 + 0
 		last_seq++
 		while( last_seq < seq )
+		{
 			printf( ESC_RED "!" )
-		printf( ESC_GREEN "*" )
+			last_seq++
+		}
+		printf( ESC_GREEN "." )
 	}
 	else
+	{
 		print ESC_DEFAULT $0
-}' &
-
-# The above command is run at background because of this:
-# 2008-01-12 17:12, at irc.freenode.net/#bash
-# <twkm> bash can only handle signals while *bash* is running.
-# <twkm> when you run other programs they must handle signals themselves.
-
-echo $!
-
-wait
+	}
+}'
