@@ -1,6 +1,7 @@
 #!/bin/bash
 #
 # Written by Denilson Figueiredo de Sa <denilsonsa@gmail.com>
+# 2010-11-05 - "ping" changed output from icmp_seq to icmp_req. Fixed.
 # 2008-04-16 - Small bug fixes, small improvement to parameter filtering.
 # 2008-02-10 - Started writing the second version. Added some live
 #              statistics alongside with the colored chars.
@@ -8,6 +9,9 @@
 #              also works on dash.
 # 2008-01-12 - First version written and released.
 
+# TODO: print the destination (also) at the bottom bar. Useful after leaving
+# the script running for quite some time.
+#
 # TODO: Test the behavior of this script upon receiving out-of-order packets, like these:
 #   http://www.blug.linux.no/rfc1149/pinglogg.txt
 #
@@ -372,7 +376,7 @@ BEGIN{
 ############################################################
 # Main loop
 {
-	if( $0 ~ /^[0-9]+ bytes from .*: icmp_seq=[0-9]+ ttl=[0-9]+ time=[0-9.]+ *ms/ )
+	if( $0 ~ /^[0-9]+ bytes from .*: icmp_[rs]eq=[0-9]+ ttl=[0-9]+ time=[0-9.]+ *ms/ )
 	{
 		# This must be called before incrementing the last_seq variable!
 		process_rtt(int($4))
