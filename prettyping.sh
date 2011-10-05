@@ -1,13 +1,22 @@
 #!/bin/bash
 #
 # Written by Denilson Figueiredo de Sa <denilsonsa@gmail.com>
+# 2008-04-16 - Small bug fixes, small improvement to parameter filtering.
 # 2008-02-10 - Started writing the second version. Added some live
 #              statistics alongside with the colored chars.
 # 2008-01-16 - Updated version. Removed [[ bash-ism. Now this script
 #              also works on dash.
 # 2008-01-12 - First version written and released.
 
-# TODO: Check if -a (Audible ping) works, and make it work.
+# TODO: Test the behavior of this script upon receiving out-of-order packets, like these:
+#   http://www.blug.linux.no/rfc1149/pinglogg.txt
+#
+# TODO: Implement "msg repeating", like...
+#   ping: sendmsg: Network is unreachable
+#   (repeated xx times)
+# where xx gets updated for every repeated line
+#
+# TODO: Implement audible ping.
 #
 # TODO: Add a command-line parameter for interactive/log mode.
 # TODO: Implement interactive/log modes.
@@ -15,6 +24,8 @@
 # TODO: Update the help message.
 #
 # TODO: Autodetect the width of printf numbers, so they will always line up correctly.
+#
+# TODO? How will prettyping behave if it receives a duplicate response?
 
 print_help() {
 	cat << EOF
@@ -32,20 +43,52 @@ EOF
 parse_arguments() {
 	USE_COLORS=1
 	LAST_N=25
+
+	PING_PARAMS=( -n )
+
 	while [[ $# != 0 ]] ; do
 		case "$1" in
 			-h | -help | --help )
 				print_help
 				exit
 				;;
+
+			# Forbidden ping parameters within prettyping:
 			-f )
-				echo "$MYNAME: You can't use -f (flood) option."
+				echo "$MYNAME: You can't use the -f (flood) option."
 				exit 1
+				;;
+			-R )
+				# -R prints extra information at each ping response.
+				echo "$MYNAME: You can't use the -R (record route) option."
+				exit 1
+				;;
+			-q )
+				echo "$MYNAME: You can't use the -q (quiet) option."
+				exit 1
+				;;
+			-n )
+				# -n prevents ping from doing reverse DNS lookup, speeding
+				# the startup up a bit. prettyping will always use this option.
+				;;
+			-v )
+				# -n enables verbose output. However, it seems the output with
+				# or without this option is the same. Anyway, prettyping will
+				# strip this parameter.
+				;;
+			# Note:
+			#  Small values for -s parameter prevents ping from being able to
+			#  calculate RTT.
+
+			# New parameters:
+			-a )
+				# TODO: Implement audible ping for responses or for missing packets
 				;;
 			--color   ) USE_COLORS=1 ;;
 			--nocolor ) USE_COLORS=0 ;;
 			--last ) LAST_N="$2" ; shift ;;
 			#TODO: Check if this parameter is really a number.
+
 			* )
 				PING_PARAMS+=("$1")
 				;;
@@ -55,8 +98,6 @@ parse_arguments() {
 }
 
 MYNAME=`basename "$0"`
-
-PING_PARAMS=( )
 parse_arguments "$@"
 
 
@@ -331,7 +372,7 @@ BEGIN{
 ############################################################
 # Main loop
 {
-	if( $0 ~ /^[0-9]+ bytes from .*: icmp_seq=[0-9]+ ttl=[0-9]+ time=[0-9.]+ *ms *$/ )
+	if( $0 ~ /^[0-9]+ bytes from .*: icmp_seq=[0-9]+ ttl=[0-9]+ time=[0-9.]+ *ms/ )
 	{
 		# This must be called before incrementing the last_seq variable!
 		process_rtt(int($4))
@@ -372,6 +413,6 @@ BEGIN{
 	else
 	{
 		other_line_is_printed()
-		printf( $0 "\n" )
+		printf( "%s\n", $0 )
 	}
 }'
