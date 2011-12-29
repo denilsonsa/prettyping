@@ -363,14 +363,19 @@ BEGIN{
 		ESC_CYAN    = "\033[1;36m"
 		ESC_WHITE   = "\033[1;37m"
 	}
-	# Other escape codes, see http://en.wikipedia.org/wiki/ANSI_escape_code
+	# Other escape codes, see:
+	# http://en.wikipedia.org/wiki/ANSI_escape_code
+	# http://vt100.net/docs/vt100-ug/chapter3.html#DECSC
+	# http://invisible-island.net/xterm/ctlseqs/ctlseqs.html
 	ESC_NEXTLINE   = "\033[E"
 	ESC_PREVLINE   = "\033[F"
 	ESC_SCROLLUP   = "\033[S"
 	ESC_SCROLLDOWN = "\033[T"
 	ESC_ERASELINE  = "\033[2K"
-	ESC_SAVEPOS    = "\033[s"
-	ESC_UNSAVEPOS  = "\033[u"
+	#ESC_SAVEPOS    = "\033[s"
+	#ESC_UNSAVEPOS  = "\033[u"
+	ESC_SAVEPOS    = "\0337"
+	ESC_UNSAVEPOS  = "\0338"
 }
 
 ############################################################
