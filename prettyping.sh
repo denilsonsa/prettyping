@@ -367,7 +367,7 @@ BEGIN{
 	# Other escape codes, see:
 	# http://en.wikipedia.org/wiki/ANSI_escape_code
 	# http://invisible-island.net/xterm/ctlseqs/ctlseqs.html
-	ESC_NEXTLINE   = "\033[E"
+	ESC_NEXTLINE   = "\n"
 	ESC_CURSORUP   = "\033[A"
 	ESC_SCROLLUP   = "\033[S"
 	ESC_SCROLLDOWN = "\033[T"
@@ -380,6 +380,9 @@ BEGIN{
 	#ESC_PREVLINE   = "\033[F"
 	#ESC_SAVEPOS    = "\033[s"
 	#ESC_UNSAVEPOS  = "\033[u"
+
+	# I am avoiding this to improve compatibility with (older versions of) tmux
+	#ESC_NEXTLINE   = "\033[E"
 }
 
 ############################################################
