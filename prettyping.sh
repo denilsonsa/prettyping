@@ -195,7 +195,8 @@ function print_newlines_if_needed()
 	{
 		if( IS_PRINTING_DOTS )
 			printf( "\n" )
-		printf( "\n" "\n" ESC_PREVLINE ESC_PREVLINE ESC_ERASELINE )
+		#printf( "\n" "\n" ESC_PREVLINE ESC_PREVLINE ESC_ERASELINE )
+		printf( "\n" "\n" ESC_CURSORUP ESC_CURSORUP ESC_ERASELINE )
 	}
 	CURR_COL++
 	IS_PRINTING_DOTS = 1
@@ -365,17 +366,20 @@ BEGIN{
 	}
 	# Other escape codes, see:
 	# http://en.wikipedia.org/wiki/ANSI_escape_code
-	# http://vt100.net/docs/vt100-ug/chapter3.html#DECSC
 	# http://invisible-island.net/xterm/ctlseqs/ctlseqs.html
 	ESC_NEXTLINE   = "\033[E"
-	ESC_PREVLINE   = "\033[F"
+	ESC_CURSORUP   = "\033[A"
 	ESC_SCROLLUP   = "\033[S"
 	ESC_SCROLLDOWN = "\033[T"
 	ESC_ERASELINE  = "\033[2K"
-	#ESC_SAVEPOS    = "\033[s"
-	#ESC_UNSAVEPOS  = "\033[u"
 	ESC_SAVEPOS    = "\0337"
 	ESC_UNSAVEPOS  = "\0338"
+
+	# I am avoiding these escapes as they are not listed in:
+	# http://vt100.net/docs/vt100-ug/chapter3.html
+	#ESC_PREVLINE   = "\033[F"
+	#ESC_SAVEPOS    = "\033[s"
+	#ESC_UNSAVEPOS  = "\033[u"
 }
 
 ############################################################
