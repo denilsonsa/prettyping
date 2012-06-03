@@ -355,7 +355,7 @@ BEGIN{
 	{
 		ESC_DEFAULT = "\033[0m"
 		ESC_BOLD    = "\033[1m"
-		ESC_BLACK   = "\033[1;31m"
+		ESC_GRAY    = "\033[1;30m"
 		ESC_RED     = "\033[1;31m"
 		ESC_GREEN   = "\033[1;32m"
 		ESC_YELLOW  = "\033[1;33m"
