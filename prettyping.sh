@@ -1,13 +1,7 @@
 #!/bin/bash
 #
-# Written by Denilson Figueiredo de Sa <denilsonsa@gmail.com>
-# 2010-11-05 - "ping" changed output from icmp_seq to icmp_req. Fixed.
-# 2008-04-16 - Small bug fixes, small improvement to parameter filtering.
-# 2008-02-10 - Started writing the second version. Added some live
-#              statistics alongside with the colored chars.
-# 2008-01-16 - Updated version. Removed [[ bash-ism. Now this script
-#              also works on dash.
-# 2008-01-12 - First version written and released.
+# Written by Denilson Figueiredo de Sá <denilsonsa@gmail.com>
+# MIT license
 
 # TODO: print the destination (also) at the bottom bar. Useful after leaving
 # the script running for quite some time.
@@ -25,20 +19,31 @@
 # TODO: Add a command-line parameter for interactive/log mode.
 # TODO: Implement interactive/log modes.
 #
-# TODO: Update the help message.
-#
 # TODO: Autodetect the width of printf numbers, so they will always line up correctly.
 #
 # TODO? How will prettyping behave if it receives a duplicate response?
 
 print_help() {
 	cat << EOF
-Usage: $MYNAME <standard ping parameters>
+Usage: $MYNAME [prettyping parameters] <standard ping parameters>
 
-TODO: Update me
+This script is a wrapper around the system's "ping" tool. It will substitute
+each ping response line by a colored character, giving a very compact overview
+of the ping responses.
 
-This script will run the standard "ping" program and will substitute each ping
-response line by a colored dot.
+prettyping parameters:
+  --[no]color  Enable/disable color output. (default: enabled)
+  --last <n>   Use the last "n" pings at the statistics line. (default: 25)
+
+ping parameters handled by prettyping:
+  -a  Audible ping is not implemented yet.
+  -f  Flood mode is not allowed in prettyping.
+  -q  Quiet output is not allowed in prettyping.
+  -R  Record route mode is not allowed in prettyping.
+  -v  Verbose output seems to be the default mode in ping.
+
+Tested with Linux ping tool from "iputils" package:
+http://www.linuxfoundation.org/collaborate/workgroups/networking/iputils
 EOF
 }
 
@@ -48,7 +53,12 @@ parse_arguments() {
 	USE_COLORS=1
 	LAST_N=25
 
-	PING_PARAMS=( -n )
+	PING_PARAMS=( )
+
+	if [[ $# = 0 ]] ; then
+		print_help
+		exit
+	fi
 
 	while [[ $# != 0 ]] ; do
 		case "$1" in
@@ -71,12 +81,8 @@ parse_arguments() {
 				echo "${MYNAME}: You can't use the -q (quiet) option."
 				exit 1
 				;;
-			-n )
-				# -n prevents ping from doing reverse DNS lookup, speeding
-				# the startup up a bit. prettyping will always use this option.
-				;;
 			-v )
-				# -n enables verbose output. However, it seems the output with
+				# -v enables verbose output. However, it seems the output with
 				# or without this option is the same. Anyway, prettyping will
 				# strip this parameter.
 				;;
@@ -388,10 +394,18 @@ BEGIN{
 ############################################################
 # Main loop
 {
+	# Sample line:
+	# 64 bytes from 8.8.8.8: icmp_seq=1 ttl=49 time=184 ms
 	if( $0 ~ /^[0-9]+ bytes from .*: icmp_[rs]eq=[0-9]+ ttl=[0-9]+ time=[0-9.]+ *ms/ )
 	{
+		# $1 = useless prefix string
+		# $2 = icmp_seq
+		# $3 = ttl
+		# $4 = time
+
 		# This must be called before incrementing the last_seq variable!
-		process_rtt(int($4))
+		rtt = int($4)
+		process_rtt(rtt)
 
 		seq = int($2)
 
