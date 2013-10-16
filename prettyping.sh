@@ -286,18 +286,19 @@ function print_response_legend(i)
 {
 	if( '"${USE_UNICODE}"' )
 	{
-		for( i=0 ; i<BLOCK_LEN ; i++ ) {
+		printf( ESC_GREEN BLOCK[0] ESC_DEFAULT "%4d ", 0)
+		for( i=1 ; i<BLOCK_LEN ; i++ ) {
 			printf( ESC_GREEN BLOCK[i] ESC_DEFAULT "%4d ",
-				ceil(i * BLOCK_MAX_RTT / (BLOCK_LEN - 1)) )
+				BLOCK_RTT_MIN + ceil((i-1) * BLOCK_RTT_RANGE / (BLOCK_LEN - 2)) )
 		}
 		printf( "\n" )
 	}
 
 	# Useful code for debugging.
-	# for( i=0 ; i<=BLOCK_MAX_RTT ; i++ ) {
-	# 	print_received_response(i)
-	# 	printf( ESC_DEFAULT "%4d\n", i )
-	# }
+	#for( i=0 ; i<=BLOCK_RTT_MAX ; i++ ) {
+	#	print_received_response(i)
+	#	printf( ESC_DEFAULT "%4d\n", i )
+	#}
 }
 
 # block_index is just a local variable.
@@ -305,10 +306,17 @@ function print_received_response(rtt, block_index)
 {
 	if( '"${USE_UNICODE}"' )
 	{
-		block_index = int(rtt * (BLOCK_LEN - 1) / BLOCK_MAX_RTT)
-		if( block_index >= BLOCK_LEN )
+		if( rtt < BLOCK_RTT_MIN )
+		{
+			block_index = 0
+		}
+		else if( rtt >= BLOCK_RTT_MAX )
 		{
 			block_index = BLOCK_LEN - 1
+		}
+		else
+		{
+			block_index = 1 + int((rtt - BLOCK_RTT_MIN) * (BLOCK_LEN - 2) / BLOCK_RTT_RANGE)
 		}
 		printf( ESC_GREEN BLOCK[block_index] )
 	}
@@ -471,7 +479,9 @@ BEGIN{
 	BLOCK[6] = "▇"
 	BLOCK[7] = "█"
 	BLOCK_LEN = 8
-	BLOCK_MAX_RTT = 175
+	BLOCK_RTT_MIN = 25
+	BLOCK_RTT_MAX = 175
+	BLOCK_RTT_RANGE = BLOCK_RTT_MAX - BLOCK_RTT_MIN
 
 	print_response_legend()
 }
