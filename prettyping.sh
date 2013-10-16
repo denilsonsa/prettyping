@@ -2,6 +2,11 @@
 #
 # Written by Denilson Figueiredo de Sá <denilsonsa@gmail.com>
 # MIT license
+#
+# Requirements:
+# * bash (tested on 4.20, should work on older versions too)
+# * gawk (GNU awk, tested on 4.0.1, should work on older versions too)
+# * ping (from iputils)
 
 # TODO: print the destination (also) at the bottom bar. Useful after leaving
 # the script running for quite some time.
