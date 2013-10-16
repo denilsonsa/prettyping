@@ -38,6 +38,7 @@ of the ping responses.
 
 prettyping parameters:
   --[no]color   Enable/disable color output. (default: enabled)
+  --[no]unicode Enable/disable unicode characters. (default: enabled)
   --last <n>    Use the last "n" pings at the statistics line. (default: 25)
   --columns <n> Override auto-detection of terminal dimensions.
   --lines <n>   Override auto-detection of terminal dimensions.
@@ -58,6 +59,7 @@ EOF
 # http://bash-hackers.org/wiki/doku.php/scripting/posparams
 parse_arguments() {
 	USE_COLORS=1
+	USE_UNICODE=1
 	LAST_N=25
 	OVERRIDE_COLUMNS=0
 	OVERRIDE_LINES=0
@@ -100,6 +102,8 @@ parse_arguments() {
 				;;
 			--color   ) USE_COLORS=1 ;;
 			--nocolor ) USE_COLORS=0 ;;
+			--unicode   ) USE_UNICODE=1 ;;
+			--nounicode ) USE_UNICODE=0 ;;
 
 			#TODO: Check if these parameters are numbers.
 			--last    ) LAST_N="$2"           ; shift ;;
@@ -161,6 +165,12 @@ trap '' 2
 function abs(x)
 {
 	return ( (x < 0) ? -x : x )
+}
+
+# Ditto for ceiling function.
+function ceil(x)
+{
+	return (x == int(x)) ? x : int(x) + 1
 }
 
 # Currently, this function is called once, at the beginning of this
@@ -266,6 +276,51 @@ function process_rtt(rtt)
 
 	# "Last N" statistics
 	store(lastn_rtt,rtt)
+}
+
+############################################################
+# Functions related to printing the fancy dot
+
+# block_index is just a local variable.
+function print_response_legend(i)
+{
+	if( '"${USE_UNICODE}"' )
+	{
+		for( i=0 ; i<BLOCK_LEN ; i++ ) {
+			printf( ESC_GREEN BLOCK[i] ESC_DEFAULT "%4d ",
+				ceil(i * BLOCK_MAX_RTT / (BLOCK_LEN - 1)) )
+		}
+		printf( "\n" )
+	}
+
+	# Useful code for debugging.
+	# for( i=0 ; i<=BLOCK_MAX_RTT ; i++ ) {
+	# 	print_received_response(i)
+	# 	printf( ESC_DEFAULT "%4d\n", i )
+	# }
+}
+
+# block_index is just a local variable.
+function print_received_response(rtt, block_index)
+{
+	if( '"${USE_UNICODE}"' )
+	{
+		block_index = int(rtt * (BLOCK_LEN - 1) / BLOCK_MAX_RTT)
+		if( block_index >= BLOCK_LEN )
+		{
+			block_index = BLOCK_LEN - 1
+		}
+		printf( ESC_GREEN BLOCK[block_index] )
+	}
+	else
+	{
+		printf( ESC_GREEN "." )
+	}
+}
+
+function print_missing_response(rtt)
+{
+	printf( ESC_RED "!" )
 }
 
 ############################################################
@@ -375,14 +430,15 @@ BEGIN{
 	{
 		ESC_DEFAULT = "\033[0m"
 		ESC_BOLD    = "\033[1m"
-		ESC_GRAY    = "\033[1;30m"
-		ESC_RED     = "\033[1;31m"
-		ESC_GREEN   = "\033[1;32m"
-		ESC_YELLOW  = "\033[1;33m"
-		ESC_BLUE    = "\033[1;34m"
-		ESC_MAGENTA = "\033[1;35m"
-		ESC_CYAN    = "\033[1;36m"
-		ESC_WHITE   = "\033[1;37m"
+		#ESC_BLACK   = "\033[0;30m"
+		#ESC_GRAY    = "\033[1;30m"
+		ESC_RED     = "\033[0;31m"
+		ESC_GREEN   = "\033[0;32m"
+		ESC_YELLOW  = "\033[0;33m"
+		ESC_BLUE    = "\033[0;34m"
+		ESC_MAGENTA = "\033[0;35m"
+		ESC_CYAN    = "\033[0;36m"
+		ESC_WHITE   = "\033[0;37m"
 	}
 	# Other escape codes, see:
 	# http://en.wikipedia.org/wiki/ANSI_escape_code
@@ -406,8 +462,18 @@ BEGIN{
 
 	############################################################
 	# Unicode characters (based on https://github.com/holman/spark )
-	# ▁ ▂ ▃ ▄ ▅ ▆ ▇ █
-	# (not implemented yet)
+	BLOCK[0] = "▁"
+	BLOCK[1] = "▂"
+	BLOCK[2] = "▃"
+	BLOCK[3] = "▄"
+	BLOCK[4] = "▅"
+	BLOCK[5] = "▆"
+	BLOCK[6] = "▇"
+	BLOCK[7] = "█"
+	BLOCK_LEN = 8
+	BLOCK_MAX_RTT = 175
+
+	print_response_legend()
 }
 
 ############################################################
@@ -432,7 +498,7 @@ BEGIN{
 		{
 			# Lost a packet
 			print_newlines_if_needed()
-			printf( ESC_RED "!" )
+			print_missing_response()
 
 			last_seq++
 			lost++
@@ -441,7 +507,7 @@ BEGIN{
 
 		# Received a packet
 		print_newlines_if_needed()
-		printf( ESC_GREEN "." )
+		print_received_response(rtt)
 
 		last_seq++
 		received++
