@@ -59,16 +59,16 @@ parse_arguments() {
 
 			# Forbidden ping parameters within prettyping:
 			-f )
-				echo "$MYNAME: You can't use the -f (flood) option."
+				echo "${MYNAME}: You can't use the -f (flood) option."
 				exit 1
 				;;
 			-R )
 				# -R prints extra information at each ping response.
-				echo "$MYNAME: You can't use the -R (record route) option."
+				echo "${MYNAME}: You can't use the -R (record route) option."
 				exit 1
 				;;
 			-q )
-				echo "$MYNAME: You can't use the -q (quiet) option."
+				echo "${MYNAME}: You can't use the -q (quiet) option."
 				exit 1
 				;;
 			-n )
@@ -212,7 +212,7 @@ function clear(d)
 	d["size"]  = 0  # The array size, goes up to LASTNMAX
 }
 
-# This function stored the value to the passed data structure.
+# This function stores the value to the passed data structure.
 # The data structure holds at most LAST_N values. When it is full,
 # a new value overwrite the oldest one.
 function store(d,value)
@@ -326,7 +326,7 @@ BEGIN{
 
 	############################################################
 	# Variables related to "last N" statistics
-	LAST_N = '$LAST_N'
+	LAST_N = '${LAST_N}'
 
 	# Data structures for the "last N" statistics
 	clear(lastn_lost)
@@ -351,7 +351,7 @@ BEGIN{
 
 	# Color escape codes.
 	# Fortunately, awk defaults any unassigned variable to an empty string.
-	if('$USE_COLORS')
+	if('${USE_COLORS}')
 	{
 		ESC_DEFAULT = "\033[0m"
 		ESC_BOLD    = "\033[1m"
