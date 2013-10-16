@@ -32,8 +32,10 @@ each ping response line by a colored character, giving a very compact overview
 of the ping responses.
 
 prettyping parameters:
-  --[no]color  Enable/disable color output. (default: enabled)
-  --last <n>   Use the last "n" pings at the statistics line. (default: 25)
+  --[no]color   Enable/disable color output. (default: enabled)
+  --last <n>    Use the last "n" pings at the statistics line. (default: 25)
+  --columns <n> Override auto-detection of terminal dimensions.
+  --lines <n>   Override auto-detection of terminal dimensions.
 
 ping parameters handled by prettyping:
   -a  Audible ping is not implemented yet.
@@ -52,13 +54,10 @@ EOF
 parse_arguments() {
 	USE_COLORS=1
 	LAST_N=25
+	OVERRIDE_COLUMNS=0
+	OVERRIDE_LINES=0
 
 	PING_PARAMS=( )
-
-	if [[ $# = 0 ]] ; then
-		print_help
-		exit
-	fi
 
 	while [[ $# != 0 ]] ; do
 		case "$1" in
@@ -96,8 +95,11 @@ parse_arguments() {
 				;;
 			--color   ) USE_COLORS=1 ;;
 			--nocolor ) USE_COLORS=0 ;;
-			--last ) LAST_N="$2" ; shift ;;
-			#TODO: Check if this parameter is really a number.
+
+			#TODO: Check if these parameters are numbers.
+			--last    ) LAST_N="$2"           ; shift ;;
+			--columns ) OVERRIDE_COLUMNS="$2" ; shift ;;
+			--lines   ) OVERRIDE_LINES="$2"   ; shift ;;
 
 			* )
 				PING_PARAMS+=("$1")
@@ -105,6 +107,11 @@ parse_arguments() {
 		esac
 		shift
 	done
+
+	if [[ "${#PING_PARAMS[@]}" = 0 ]] ; then
+		echo "${MYNAME}: Missing parameters, use --help for instructions."
+		exit
+	fi
 }
 
 MYNAME=`basename "$0"`
@@ -171,6 +178,8 @@ function get_terminal_size(SIZE,SIZEA)
 			HAS_STTY = 0
 		close(STTY_CMD)
 	}
+	if ( '"${OVERRIDE_COLUMNS}"' ) { COLUMNS = '"${OVERRIDE_COLUMNS}"' }
+	if ( '"${OVERRIDE_LINES}"'   ) { LINES   = '"${OVERRIDE_LINES}"'   }
 }
 
 ############################################################
@@ -332,7 +341,7 @@ BEGIN{
 
 	############################################################
 	# Variables related to "last N" statistics
-	LAST_N = '${LAST_N}'
+	LAST_N = '"${LAST_N}"'
 
 	# Data structures for the "last N" statistics
 	clear(lastn_lost)
@@ -357,7 +366,7 @@ BEGIN{
 
 	# Color escape codes.
 	# Fortunately, awk defaults any unassigned variable to an empty string.
-	if('${USE_COLORS}')
+	if( '"${USE_COLORS}"' )
 	{
 		ESC_DEFAULT = "\033[0m"
 		ESC_BOLD    = "\033[1m"
@@ -389,6 +398,11 @@ BEGIN{
 
 	# I am avoiding this to improve compatibility with (older versions of) tmux
 	#ESC_NEXTLINE   = "\033[E"
+
+	############################################################
+	# Unicode characters (based on https://github.com/holman/spark )
+	# ▁ ▂ ▃ ▄ ▅ ▆ ▇ █
+	# (not implemented yet)
 }
 
 ############################################################
