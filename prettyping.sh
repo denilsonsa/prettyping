@@ -286,9 +286,9 @@ function print_response_legend(i)
 {
 	if( '"${USE_UNICODE}"' )
 	{
-		printf( ESC_GREEN BLOCK[0] ESC_DEFAULT "%4d ", 0)
+		printf( BLOCK[0] ESC_DEFAULT "%4d ", 0)
 		for( i=1 ; i<BLOCK_LEN ; i++ ) {
-			printf( ESC_GREEN BLOCK[i] ESC_DEFAULT "%4d ",
+			printf( BLOCK[i] ESC_DEFAULT "%4d ",
 				BLOCK_RTT_MIN + ceil((i-1) * BLOCK_RTT_RANGE / (BLOCK_LEN - 2)) )
 		}
 		printf( "\n" )
@@ -318,7 +318,7 @@ function print_received_response(rtt, block_index)
 		{
 			block_index = 1 + int((rtt - BLOCK_RTT_MIN) * (BLOCK_LEN - 2) / BLOCK_RTT_RANGE)
 		}
-		printf( ESC_GREEN BLOCK[block_index] )
+		printf( BLOCK[block_index] )
 	}
 	else
 	{
@@ -447,6 +447,8 @@ BEGIN{
 		ESC_MAGENTA = "\033[0;35m"
 		ESC_CYAN    = "\033[0;36m"
 		ESC_WHITE   = "\033[0;37m"
+		ESC_YELLOW_ON_GREEN = "\033[42;33m"
+		ESC_RED_ON_YELLOW   = "\033[43;31m"
 	}
 	# Other escape codes, see:
 	# http://en.wikipedia.org/wiki/ANSI_escape_code
@@ -470,19 +472,41 @@ BEGIN{
 
 	############################################################
 	# Unicode characters (based on https://github.com/holman/spark )
-	BLOCK[0] = "▁"
-	BLOCK[1] = "▂"
-	BLOCK[2] = "▃"
-	BLOCK[3] = "▄"
-	BLOCK[4] = "▅"
-	BLOCK[5] = "▆"
-	BLOCK[6] = "▇"
-	BLOCK[7] = "█"
+	BLOCK[ 0] = ESC_GREEN "▁"
+	BLOCK[ 1] = ESC_GREEN "▂"
+	BLOCK[ 2] = ESC_GREEN "▃"
+	BLOCK[ 3] = ESC_GREEN "▄"
+	BLOCK[ 4] = ESC_GREEN "▅"
+	BLOCK[ 5] = ESC_GREEN "▆"
+	BLOCK[ 6] = ESC_GREEN "▇"
+	BLOCK[ 7] = ESC_GREEN "█"
+	BLOCK[ 8] = ESC_YELLOW_ON_GREEN "▁"
+	BLOCK[ 9] = ESC_YELLOW_ON_GREEN "▂"
+	BLOCK[10] = ESC_YELLOW_ON_GREEN "▃"
+	BLOCK[11] = ESC_YELLOW_ON_GREEN "▄"
+	BLOCK[12] = ESC_YELLOW_ON_GREEN "▅"
+	BLOCK[13] = ESC_YELLOW_ON_GREEN "▆"
+	BLOCK[14] = ESC_YELLOW_ON_GREEN "▇"
+	BLOCK[15] = ESC_YELLOW_ON_GREEN "█"
+	BLOCK[16] = ESC_RED_ON_YELLOW "▁"
+	BLOCK[17] = ESC_RED_ON_YELLOW "▂"
+	BLOCK[18] = ESC_RED_ON_YELLOW "▃"
+	BLOCK[19] = ESC_RED_ON_YELLOW "▄"
+	BLOCK[20] = ESC_RED_ON_YELLOW "▅"
+	BLOCK[21] = ESC_RED_ON_YELLOW "▆"
+	BLOCK[22] = ESC_RED_ON_YELLOW "▇"
+	BLOCK[23] = ESC_RED_ON_YELLOW "█"
+	# Simple version:
 	BLOCK_LEN = 8
 	BLOCK_RTT_MIN = 25
 	BLOCK_RTT_MAX = 175
-	BLOCK_RTT_RANGE = BLOCK_RTT_MAX - BLOCK_RTT_MIN
+	# Multi-color version:
+	BLOCK_LEN = 24
+	BLOCK_RTT_MIN = 10
+	BLOCK_RTT_MAX = 230
+	# TODO: Document this, add command-line parameters, add some auto-min/auto-max values.
 
+	BLOCK_RTT_RANGE = BLOCK_RTT_MAX - BLOCK_RTT_MIN
 	print_response_legend()
 }
 
