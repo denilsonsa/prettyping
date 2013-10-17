@@ -37,11 +37,13 @@ each ping response line by a colored character, giving a very compact overview
 of the ping responses.
 
 prettyping parameters:
-  --[no]color   Enable/disable color output. (default: enabled)
-  --[no]unicode Enable/disable unicode characters. (default: enabled)
-  --last <n>    Use the last "n" pings at the statistics line. (default: 25)
-  --columns <n> Override auto-detection of terminal dimensions.
-  --lines <n>   Override auto-detection of terminal dimensions.
+  --[no]color      Enable/disable color output. (default: enabled)
+  --[no]multicolor Enable/disable multi-color unicode output. Has no effect if
+                     unicode is disabled. (default: enabled)
+  --[no]unicode    Enable/disable unicode characters. (default: enabled)
+  --last <n>       Use the last "n" pings at the statistics line. (default: 25)
+  --columns <n>    Override auto-detection of terminal dimensions.
+  --lines <n>      Override auto-detection of terminal dimensions.
 
 ping parameters handled by prettyping:
   -a  Audible ping is not implemented yet.
@@ -58,7 +60,8 @@ EOF
 # Thanks to people at #bash who pointed me at
 # http://bash-hackers.org/wiki/doku.php/scripting/posparams
 parse_arguments() {
-	USE_COLORS=1
+	USE_COLOR=1
+	USE_MULTICOLOR=1
 	USE_UNICODE=1
 	LAST_N=25
 	OVERRIDE_COLUMNS=0
@@ -100,10 +103,12 @@ parse_arguments() {
 			-a )
 				# TODO: Implement audible ping for responses or for missing packets
 				;;
-			--color   ) USE_COLORS=1 ;;
-			--nocolor ) USE_COLORS=0 ;;
-			--unicode   ) USE_UNICODE=1 ;;
-			--nounicode ) USE_UNICODE=0 ;;
+			--color        ) USE_COLOR=1 ;;
+			--nocolor      ) USE_COLOR=0 ;;
+			--multicolor   ) USE_MULTICOLOR=1 ;;
+			--nomulticolor ) USE_MULTICOLOR=0 ;;
+			--unicode      ) USE_UNICODE=1 ;;
+			--nounicode    ) USE_UNICODE=0 ;;
 
 			#TODO: Check if these parameters are numbers.
 			--last    ) LAST_N="$2"           ; shift ;;
@@ -434,7 +439,7 @@ BEGIN{
 
 	# Color escape codes.
 	# Fortunately, awk defaults any unassigned variable to an empty string.
-	if( '"${USE_COLORS}"' )
+	if( '"${USE_COLOR}"' )
 	{
 		ESC_DEFAULT = "\033[0m"
 		ESC_BOLD    = "\033[1m"
@@ -472,42 +477,51 @@ BEGIN{
 
 	############################################################
 	# Unicode characters (based on https://github.com/holman/spark )
-	BLOCK[ 0] = ESC_GREEN "▁"
-	BLOCK[ 1] = ESC_GREEN "▂"
-	BLOCK[ 2] = ESC_GREEN "▃"
-	BLOCK[ 3] = ESC_GREEN "▄"
-	BLOCK[ 4] = ESC_GREEN "▅"
-	BLOCK[ 5] = ESC_GREEN "▆"
-	BLOCK[ 6] = ESC_GREEN "▇"
-	BLOCK[ 7] = ESC_GREEN "█"
-	BLOCK[ 8] = ESC_YELLOW_ON_GREEN "▁"
-	BLOCK[ 9] = ESC_YELLOW_ON_GREEN "▂"
-	BLOCK[10] = ESC_YELLOW_ON_GREEN "▃"
-	BLOCK[11] = ESC_YELLOW_ON_GREEN "▄"
-	BLOCK[12] = ESC_YELLOW_ON_GREEN "▅"
-	BLOCK[13] = ESC_YELLOW_ON_GREEN "▆"
-	BLOCK[14] = ESC_YELLOW_ON_GREEN "▇"
-	BLOCK[15] = ESC_YELLOW_ON_GREEN "█"
-	BLOCK[16] = ESC_RED_ON_YELLOW "▁"
-	BLOCK[17] = ESC_RED_ON_YELLOW "▂"
-	BLOCK[18] = ESC_RED_ON_YELLOW "▃"
-	BLOCK[19] = ESC_RED_ON_YELLOW "▄"
-	BLOCK[20] = ESC_RED_ON_YELLOW "▅"
-	BLOCK[21] = ESC_RED_ON_YELLOW "▆"
-	BLOCK[22] = ESC_RED_ON_YELLOW "▇"
-	BLOCK[23] = ESC_RED_ON_YELLOW "█"
-	# Simple version:
-	BLOCK_LEN = 8
-	BLOCK_RTT_MIN = 25
-	BLOCK_RTT_MAX = 175
-	# Multi-color version:
-	BLOCK_LEN = 24
-	BLOCK_RTT_MIN = 10
-	BLOCK_RTT_MAX = 230
-	# TODO: Document this, add command-line parameters, add some auto-min/auto-max values.
+	if( '"${USE_UNICODE}"' )
+	{
+		BLOCK[ 0] = ESC_GREEN "▁"
+		BLOCK[ 1] = ESC_GREEN "▂"
+		BLOCK[ 2] = ESC_GREEN "▃"
+		BLOCK[ 3] = ESC_GREEN "▄"
+		BLOCK[ 4] = ESC_GREEN "▅"
+		BLOCK[ 5] = ESC_GREEN "▆"
+		BLOCK[ 6] = ESC_GREEN "▇"
+		BLOCK[ 7] = ESC_GREEN "█"
+		BLOCK[ 8] = ESC_YELLOW_ON_GREEN "▁"
+		BLOCK[ 9] = ESC_YELLOW_ON_GREEN "▂"
+		BLOCK[10] = ESC_YELLOW_ON_GREEN "▃"
+		BLOCK[11] = ESC_YELLOW_ON_GREEN "▄"
+		BLOCK[12] = ESC_YELLOW_ON_GREEN "▅"
+		BLOCK[13] = ESC_YELLOW_ON_GREEN "▆"
+		BLOCK[14] = ESC_YELLOW_ON_GREEN "▇"
+		BLOCK[15] = ESC_YELLOW_ON_GREEN "█"
+		BLOCK[16] = ESC_RED_ON_YELLOW "▁"
+		BLOCK[17] = ESC_RED_ON_YELLOW "▂"
+		BLOCK[18] = ESC_RED_ON_YELLOW "▃"
+		BLOCK[19] = ESC_RED_ON_YELLOW "▄"
+		BLOCK[20] = ESC_RED_ON_YELLOW "▅"
+		BLOCK[21] = ESC_RED_ON_YELLOW "▆"
+		BLOCK[22] = ESC_RED_ON_YELLOW "▇"
+		BLOCK[23] = ESC_RED_ON_YELLOW "█"
+		if( '"${USE_MULTICOLOR}"' )
+		{
+			# Multi-color version:
+			BLOCK_LEN = 24
+			BLOCK_RTT_MIN = 10
+			BLOCK_RTT_MAX = 230
+		}
+		else
+		{
+			# Simple version:
+			BLOCK_LEN = 8
+			BLOCK_RTT_MIN = 25
+			BLOCK_RTT_MAX = 175
+		}
+		# TODO: About RTT_MIN/RTT_MAX: document them, add command-line parameters, add some auto-min/auto-max values.
 
-	BLOCK_RTT_RANGE = BLOCK_RTT_MAX - BLOCK_RTT_MIN
-	print_response_legend()
+		BLOCK_RTT_RANGE = BLOCK_RTT_MAX - BLOCK_RTT_MIN
+		print_response_legend()
+	}
 }
 
 ############################################################
