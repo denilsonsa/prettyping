@@ -21,9 +21,6 @@
 #
 # TODO: Implement audible ping.
 #
-# TODO: Add a command-line parameter for interactive/log mode.
-# TODO: Implement interactive/log modes.
-#
 # TODO: Autodetect the width of printf numbers, so they will always line up correctly.
 #
 # TODO? How will prettyping behave if it receives a duplicate response?
@@ -41,7 +38,8 @@ prettyping parameters:
   --[no]multicolor Enable/disable multi-color unicode output. Has no effect if
                      either color or unicode is disabled. (default: enabled)
   --[no]unicode    Enable/disable unicode characters. (default: enabled)
-  --last <n>       Use the last "n" pings at the statistics line. (default: 25)
+  --[no]terminal   Force the output designed to a terminal. (default: auto)
+  --last <n>       Use the last "n" pings at the statistics line. (default: 60)
   --columns <n>    Override auto-detection of terminal dimensions.
   --lines <n>      Override auto-detection of terminal dimensions.
   --rttmin <n>     Minimum RTT represented in the unicode graph. (default: auto)
@@ -66,7 +64,13 @@ parse_arguments() {
 	USE_MULTICOLOR=1
 	USE_UNICODE=1
 
-	LAST_N=25
+	if [ -t 1 ]; then
+		IS_TERMINAL=1
+	else
+		IS_TERMINAL=0
+	fi
+
+	LAST_N=60
 	OVERRIDE_COLUMNS=0
 	OVERRIDE_LINES=0
 	RTT_MIN=auto
@@ -115,6 +119,8 @@ parse_arguments() {
 			-nomulticolor | --nomulticolor ) USE_MULTICOLOR=0 ;;
 			-unicode      | --unicode      ) USE_UNICODE=1 ;;
 			-nounicode    | --nounicode    ) USE_UNICODE=0 ;;
+			-terminal     | --terminal     ) IS_TERMINAL=1 ;;
+			-noterminal   | --noterminal   ) IS_TERMINAL=0 ;;
 
 			#TODO: Check if these parameters are numbers.
 			-last    | --last    ) LAST_N="$2"           ; shift ;;
@@ -219,7 +225,12 @@ function get_terminal_size(SIZE,SIZEA) {
 # restore the default color.
 function other_line_is_printed() {
 	if( IS_PRINTING_DOTS ) {
-		printf( ESC_DEFAULT ESC_NEXTLINE ESC_NEXTLINE "\n" )
+		if( '"${IS_TERMINAL}"' ) {
+			printf( ESC_DEFAULT ESC_NEXTLINE ESC_NEXTLINE "\n" )
+		} else {
+			printf( ESC_DEFAULT "\n" )
+			print_statistics_bar()
+		}
 	}
 	IS_PRINTING_DOTS = 0
 	CURR_COL = 0
@@ -227,19 +238,29 @@ function other_line_is_printed() {
 
 # Prints the newlines required for the live statistics.
 #
-# I need to print some newlines and then return the cursor back
-# to its position to make sure the terminal will scroll.
+# I need to print some newlines and then return the cursor back to its position
+# to make sure the terminal will scroll.
+#
+# If the output is not a terminal, break lines on every LAST_N dots.
 function print_newlines_if_needed() {
-	# COLUMNS-1 because I want to avoid bugs with the cursor at the last column
-	if( CURR_COL >= COLUMNS-1 ) {
-		CURR_COL = 0
-	}
-	if( CURR_COL == 0 ) {
-		if( IS_PRINTING_DOTS ) {
-			printf( "\n" )
+	if( '"${IS_TERMINAL}"' ) {
+		# COLUMNS-1 because I want to avoid bugs with the cursor at the last column
+		if( CURR_COL >= COLUMNS-1 ) {
+			CURR_COL = 0
 		}
-		#printf( "\n" "\n" ESC_PREVLINE ESC_PREVLINE ESC_ERASELINE )
-		printf( "\n" "\n" ESC_CURSORUP ESC_CURSORUP ESC_ERASELINE )
+		if( CURR_COL == 0 ) {
+			if( IS_PRINTING_DOTS ) {
+				printf( "\n" )
+			}
+			#printf( "\n" "\n" ESC_PREVLINE ESC_PREVLINE ESC_ERASELINE )
+			printf( ESC_DEFAULT "\n" "\n" ESC_CURSORUP ESC_CURSORUP ESC_ERASELINE )
+		}
+	} else {
+		if( CURR_COL >= LAST_N ) {
+			CURR_COL = 0
+			printf( ESC_DEFAULT "\n" )
+			print_statistics_bar()
+		}
 	}
 	CURR_COL++
 	IS_PRINTING_DOTS = 1
@@ -251,7 +272,7 @@ function print_newlines_if_needed() {
 # Clears the data structure.
 function clear(d) {
 	d["index"] = 0  # The next position to store a value
-	d["size"]  = 0  # The array size, goes up to LASTNMAX
+	d["size"]  = 0  # The array size, goes up to LAST_N
 }
 
 # This function stores the value to the passed data structure.
@@ -288,7 +309,7 @@ function process_rtt(rtt) {
 }
 
 ############################################################
-# Functions related to printing the fancy dot
+# Functions related to printing the fancy ping response
 
 # block_index is just a local variable.
 function print_response_legend(i) {
@@ -378,6 +399,24 @@ function print_last_n(i, sum, min, avg, max, diffs) {
 		lastn_rtt["size"] )
 }
 
+function print_statistics_bar() {
+	if( '"${IS_TERMINAL}"' ) {
+		printf( ESC_SAVEPOS ESC_DEFAULT )
+
+		printf( ESC_NEXTLINE ESC_ERASELINE )
+		print_overall()
+		printf( ESC_NEXTLINE ESC_ERASELINE )
+		print_last_n()
+
+		printf( ESC_UNSAVEPOS )
+	} else {
+		print_overall()
+		printf( "\n" )
+		print_last_n()
+		printf( "\n" )
+	}
+}
+
 ############################################################
 # Initializations
 BEGIN {
@@ -422,8 +461,9 @@ BEGIN {
 	HAS_STTY = 1
 	STTY_CMD = "stty size --file=/dev/tty 2> /dev/null"
 	get_terminal_size()
-	if( COLUMNS <= 50 )
+	if( '"${IS_TERMINAL}"' && COLUMNS <= 50 ) {
 		print "Warning: terminal width is too small."
+	}
 
 	############################################################
 	# ANSI escape codes
@@ -537,14 +577,14 @@ BEGIN {
 
 		seq = int($2)
 
-		while( last_seq < seq-1 ) {
+		while( last_seq < seq - 1 ) {
 			# Lost a packet
 			print_newlines_if_needed()
 			print_missing_response()
 
 			last_seq++
 			lost++
-			store(lastn_lost,1)
+			store(lastn_lost, 1)
 		}
 
 		# Received a packet
@@ -553,21 +593,16 @@ BEGIN {
 
 		last_seq++
 		received++
-		store(lastn_lost,0)
+		store(lastn_lost, 0)
 
-		printf( ESC_SAVEPOS ESC_DEFAULT )
-
-		printf( ESC_NEXTLINE ESC_ERASELINE )
-		print_overall()
-		printf( ESC_NEXTLINE ESC_ERASELINE )
-		print_last_n()
-
-		printf( ESC_UNSAVEPOS )
-
-		# Not really needed, uncomment if things get buggy
-		#fflush()
+		if( '"${IS_TERMINAL}"' ) {
+			print_statistics_bar()
+		}
 	} else {
 		other_line_is_printed()
 		printf( "%s\n", $0 )
 	}
+
+	# Not needed when the output is a terminal, but does not hurt either.
+	fflush()
 }'
