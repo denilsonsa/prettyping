@@ -44,6 +44,8 @@ prettyping parameters:
   --last <n>       Use the last "n" pings at the statistics line. (default: 25)
   --columns <n>    Override auto-detection of terminal dimensions.
   --lines <n>      Override auto-detection of terminal dimensions.
+  --rttmin <n>     Minimum RTT represented in the unicode graph. (default: auto)
+  --rttmax <n>     Maximum RTT represented in the unicode graph. (default: auto)
 
 ping parameters handled by prettyping:
   -a  Audible ping is not implemented yet.
@@ -63,9 +65,12 @@ parse_arguments() {
 	USE_COLOR=1
 	USE_MULTICOLOR=1
 	USE_UNICODE=1
+
 	LAST_N=25
 	OVERRIDE_COLUMNS=0
 	OVERRIDE_LINES=0
+	RTT_MIN=auto
+	RTT_MAX=auto
 
 	PING_PARAMS=( )
 
@@ -103,17 +108,20 @@ parse_arguments() {
 			-a )
 				# TODO: Implement audible ping for responses or for missing packets
 				;;
-			--color        ) USE_COLOR=1 ;;
-			--nocolor      ) USE_COLOR=0 ;;
-			--multicolor   ) USE_MULTICOLOR=1 ;;
-			--nomulticolor ) USE_MULTICOLOR=0 ;;
-			--unicode      ) USE_UNICODE=1 ;;
-			--nounicode    ) USE_UNICODE=0 ;;
+
+			-color        | --color        ) USE_COLOR=1 ;;
+			-nocolor      | --nocolor      ) USE_COLOR=0 ;;
+			-multicolor   | --multicolor   ) USE_MULTICOLOR=1 ;;
+			-nomulticolor | --nomulticolor ) USE_MULTICOLOR=0 ;;
+			-unicode      | --unicode      ) USE_UNICODE=1 ;;
+			-nounicode    | --nounicode    ) USE_UNICODE=0 ;;
 
 			#TODO: Check if these parameters are numbers.
-			--last    ) LAST_N="$2"           ; shift ;;
-			--columns ) OVERRIDE_COLUMNS="$2" ; shift ;;
-			--lines   ) OVERRIDE_LINES="$2"   ; shift ;;
+			-last    | --last    ) LAST_N="$2"           ; shift ;;
+			-columns | --columns ) OVERRIDE_COLUMNS="$2" ; shift ;;
+			-lines   | --lines   ) OVERRIDE_LINES="$2"   ; shift ;;
+			-rttmin  | --rttmin  ) RTT_MIN="$2"          ; shift ;;
+			-rttmax  | --rttmax  ) RTT_MAX="$2"          ; shift ;;
 
 			* )
 				PING_PARAMS+=("$1")
@@ -122,9 +130,14 @@ parse_arguments() {
 		shift
 	done
 
+	if [[ "${RTT_MIN}" -gt 0 && "${RTT_MAX}" -gt 0 && "${RTT_MIN}" -ge "${RTT_MAX}" ]] ; then
+		echo "${MYNAME}: Invalid --rttmin and -rttmax values."
+		exit 1
+	fi
+
 	if [[ "${#PING_PARAMS[@]}" = 0 ]] ; then
 		echo "${MYNAME}: Missing parameters, use --help for instructions."
-		exit
+		exit 1
 	fi
 }
 
@@ -167,14 +180,12 @@ trap '' 2
 	wait
 ) 2>&1 | gawk '
 # Weird that awk does not come with abs(), so I need to implement it.
-function abs(x)
-{
+function abs(x) {
 	return ( (x < 0) ? -x : x )
 }
 
 # Ditto for ceiling function.
-function ceil(x)
-{
+function ceil(x) {
 	return (x == int(x)) ? x : int(x) + 1
 }
 
@@ -184,22 +195,19 @@ function ceil(x)
 #
 # Local variables MUST be declared in argument list, else they are
 # seen as global. Ugly, but that is how awk works.
-function get_terminal_size(SIZE,SIZEA)
-{
-	if( HAS_STTY )
-	{
-		if( (STTY_CMD | getline SIZE) == 1 )
-		{
+function get_terminal_size(SIZE,SIZEA) {
+	if( HAS_STTY ) {
+		if( (STTY_CMD | getline SIZE) == 1 ) {
 			split(SIZE, SIZEA, " ")
 			LINES   = SIZEA[1]
 			COLUMNS = SIZEA[2]
-		}
-		else
+		} else {
 			HAS_STTY = 0
+		}
 		close(STTY_CMD)
 	}
-	if ( '"${OVERRIDE_COLUMNS}"' ) { COLUMNS = '"${OVERRIDE_COLUMNS}"' }
-	if ( '"${OVERRIDE_LINES}"'   ) { LINES   = '"${OVERRIDE_LINES}"'   }
+	if ( int('"${OVERRIDE_COLUMNS}"') ) { COLUMNS = int('"${OVERRIDE_COLUMNS}"') }
+	if ( int('"${OVERRIDE_LINES}"')   ) { LINES   = int('"${OVERRIDE_LINES}"')   }
 }
 
 ############################################################
@@ -209,10 +217,10 @@ function get_terminal_size(SIZE,SIZEA)
 #
 # It will move the cursor to the line next to the statistics and
 # restore the default color.
-function other_line_is_printed()
-{
-	if( IS_PRINTING_DOTS )
+function other_line_is_printed() {
+	if( IS_PRINTING_DOTS ) {
 		printf( ESC_DEFAULT ESC_NEXTLINE ESC_NEXTLINE "\n" )
+	}
 	IS_PRINTING_DOTS = 0
 	CURR_COL = 0
 }
@@ -221,15 +229,15 @@ function other_line_is_printed()
 #
 # I need to print some newlines and then return the cursor back
 # to its position to make sure the terminal will scroll.
-function print_newlines_if_needed()
-{
+function print_newlines_if_needed() {
 	# COLUMNS-1 because I want to avoid bugs with the cursor at the last column
-	if( CURR_COL >= COLUMNS-1 )
+	if( CURR_COL >= COLUMNS-1 ) {
 		CURR_COL = 0
-	if( CURR_COL == 0 )
-	{
-		if( IS_PRINTING_DOTS )
+	}
+	if( CURR_COL == 0 ) {
+		if( IS_PRINTING_DOTS ) {
 			printf( "\n" )
+		}
 		#printf( "\n" "\n" ESC_PREVLINE ESC_PREVLINE ESC_ERASELINE )
 		printf( "\n" "\n" ESC_CURSORUP ESC_CURSORUP ESC_ERASELINE )
 	}
@@ -241,8 +249,7 @@ function print_newlines_if_needed()
 # Functions related to the data structure of "Last N" statistics.
 
 # Clears the data structure.
-function clear(d)
-{
+function clear(d) {
 	d["index"] = 0  # The next position to store a value
 	d["size"]  = 0  # The array size, goes up to LASTNMAX
 }
@@ -250,31 +257,28 @@ function clear(d)
 # This function stores the value to the passed data structure.
 # The data structure holds at most LAST_N values. When it is full,
 # a new value overwrite the oldest one.
-function store(d,value)
-{
+function store(d, value) {
 	d[d["index"]] = value
 	d["index"]++
-	if( d["index"] >= d["size"] )
-	{
-		if( d["size"] < LAST_N )
+	if( d["index"] >= d["size"] ) {
+		if( d["size"] < LAST_N ) {
 			d["size"]++
-		else
+		} else {
 			d["index"] = 0
+		}
 	}
 }
 
 ############################################################
 # Functions related to processing the received response
 
-function process_rtt(rtt)
-{
+function process_rtt(rtt) {
 	# Overall statistics
 	last_rtt = rtt
 	total_rtt += rtt
-	if( last_seq == 0 )
+	if( last_seq == 0 ) {
 		min_rtt = max_rtt = rtt
-	else
-	{
+	} else {
 		if( rtt < min_rtt ) min_rtt = rtt
 		if( rtt > max_rtt ) max_rtt = rtt
 	}
@@ -287,10 +291,8 @@ function process_rtt(rtt)
 # Functions related to printing the fancy dot
 
 # block_index is just a local variable.
-function print_response_legend(i)
-{
-	if( '"${USE_UNICODE}"' )
-	{
+function print_response_legend(i) {
+	if( '"${USE_UNICODE}"' ) {
 		printf( BLOCK[0] ESC_DEFAULT "%4d ", 0)
 		for( i=1 ; i<BLOCK_LEN ; i++ ) {
 			printf( BLOCK[i] ESC_DEFAULT "%4d ",
@@ -307,40 +309,29 @@ function print_response_legend(i)
 }
 
 # block_index is just a local variable.
-function print_received_response(rtt, block_index)
-{
-	if( '"${USE_UNICODE}"' )
-	{
-		if( rtt < BLOCK_RTT_MIN )
-		{
+function print_received_response(rtt, block_index) {
+	if( '"${USE_UNICODE}"' ) {
+		if( rtt < BLOCK_RTT_MIN ) {
 			block_index = 0
-		}
-		else if( rtt >= BLOCK_RTT_MAX )
-		{
+		} else if( rtt >= BLOCK_RTT_MAX ) {
 			block_index = BLOCK_LEN - 1
-		}
-		else
-		{
+		} else {
 			block_index = 1 + int((rtt - BLOCK_RTT_MIN) * (BLOCK_LEN - 2) / BLOCK_RTT_RANGE)
 		}
 		printf( BLOCK[block_index] )
-	}
-	else
-	{
+	} else {
 		printf( ESC_GREEN "." )
 	}
 }
 
-function print_missing_response(rtt)
-{
+function print_missing_response(rtt) {
 	printf( ESC_RED "!" )
 }
 
 ############################################################
 # Functions related to printing statistics
 
-function print_overall()
-{
+function print_overall() {
 	printf( "%2d/%3d (%2d%%) lost; %4.0f/" ESC_BOLD "%4.0f" ESC_DEFAULT "/%4.0fms; last: %4.0fms",
 		lost,
 		lost+received,
@@ -351,12 +342,12 @@ function print_overall()
 		last_rtt )
 }
 
-function print_last_n(i, sum, min, avg, max, diffs)
-{
+function print_last_n(i, sum, min, avg, max, diffs) {
 	# Calculate and print the lost packets statistics
 	sum = 0
-	for( i=0 ; i<lastn_lost["size"] ; i++ )
+	for( i=0 ; i<lastn_lost["size"] ; i++ ) {
 		sum += lastn_lost[i]
+	}
 	printf( "%2d/%3d (%2d%%) lost; ",
 		sum,
 		lastn_lost["size"],
@@ -365,8 +356,7 @@ function print_last_n(i, sum, min, avg, max, diffs)
 	# Calculate the min/avg/max rtt times
 	sum = diffs = 0
 	min = max = lastn_rtt[0]
-	for( i=0 ; i<lastn_rtt["size"] ; i++ )
-	{
+	for( i=0 ; i<lastn_rtt["size"] ; i++ ) {
 		sum += lastn_rtt[i]
 		if( lastn_rtt[i] < min ) min = lastn_rtt[i]
 		if( lastn_rtt[i] > max ) max = lastn_rtt[i]
@@ -374,8 +364,9 @@ function print_last_n(i, sum, min, avg, max, diffs)
 	avg = sum/lastn_rtt["size"]
 
 	# Calculate mdev (mean absolute deviation)
-	for( i=0 ; i<lastn_rtt["size"] ; i++ )
+	for( i=0 ; i<lastn_rtt["size"] ; i++ ) {
 		diffs += abs(lastn_rtt[i] - avg)
+	}
 	diffs /= lastn_rtt["size"]
 
 	# Print the rtt statistics
@@ -389,7 +380,7 @@ function print_last_n(i, sum, min, avg, max, diffs)
 
 ############################################################
 # Initializations
-BEGIN{
+BEGIN {
 	# Easy way to get each value from ping output
 	FS = "="
 
@@ -414,7 +405,7 @@ BEGIN{
 
 	############################################################
 	# Variables related to "last N" statistics
-	LAST_N = '"${LAST_N}"'
+	LAST_N = int('"${LAST_N}"')
 
 	# Data structures for the "last N" statistics
 	clear(lastn_lost)
@@ -439,8 +430,7 @@ BEGIN{
 
 	# Color escape codes.
 	# Fortunately, awk defaults any unassigned variable to an empty string.
-	if( '"${USE_COLOR}"' )
-	{
+	if( '"${USE_COLOR}"' ) {
 		ESC_DEFAULT = "\033[0m"
 		ESC_BOLD    = "\033[1m"
 		#ESC_BLACK   = "\033[0;30m"
@@ -477,8 +467,7 @@ BEGIN{
 
 	############################################################
 	# Unicode characters (based on https://github.com/holman/spark )
-	if( '"${USE_UNICODE}"' )
-	{
+	if( '"${USE_UNICODE}"' ) {
 		BLOCK[ 0] = ESC_GREEN "▁"
 		BLOCK[ 1] = ESC_GREEN "▂"
 		BLOCK[ 2] = ESC_GREEN "▃"
@@ -503,21 +492,28 @@ BEGIN{
 		BLOCK[21] = ESC_RED_ON_YELLOW "▆"
 		BLOCK[22] = ESC_RED_ON_YELLOW "▇"
 		BLOCK[23] = ESC_RED_ON_YELLOW "█"
-		if( '"${USE_MULTICOLOR}"' && '"${USE_COLOR}"' )
-		{
+		if( '"${USE_MULTICOLOR}"' && '"${USE_COLOR}"' ) {
 			# Multi-color version:
 			BLOCK_LEN = 24
 			BLOCK_RTT_MIN = 10
 			BLOCK_RTT_MAX = 230
-		}
-		else
-		{
+		} else {
 			# Simple version:
 			BLOCK_LEN = 8
 			BLOCK_RTT_MIN = 25
 			BLOCK_RTT_MAX = 175
 		}
-		# TODO: About RTT_MIN/RTT_MAX: document them, add command-line parameters, add some auto-min/auto-max values.
+
+		if( int('"${RTT_MIN}"') > 0 && int('"${RTT_MAX}"') > 0 ) {
+			BLOCK_RTT_MIN = int('"${RTT_MIN}"')
+			BLOCK_RTT_MAX = int('"${RTT_MAX}"')
+		} else if( int('"${RTT_MIN}"') > 0 ) {
+			BLOCK_RTT_MIN = int('"${RTT_MIN}"')
+			BLOCK_RTT_MAX = BLOCK_RTT_MIN * (BLOCK_LEN - 1)
+		} else if( int('"${RTT_MAX}"') > 0 ) {
+			BLOCK_RTT_MAX = int('"${RTT_MAX}"')
+			BLOCK_RTT_MIN = int(BLOCK_RTT_MAX / (BLOCK_LEN - 1))
+		}
 
 		BLOCK_RTT_RANGE = BLOCK_RTT_MAX - BLOCK_RTT_MIN
 		print_response_legend()
@@ -529,8 +525,7 @@ BEGIN{
 {
 	# Sample line:
 	# 64 bytes from 8.8.8.8: icmp_seq=1 ttl=49 time=184 ms
-	if( $0 ~ /^[0-9]+ bytes from .*: icmp_[rs]eq=[0-9]+ ttl=[0-9]+ time=[0-9.]+ *ms/ )
-	{
+	if( $0 ~ /^[0-9]+ bytes from .*: icmp_[rs]eq=[0-9]+ ttl=[0-9]+ time=[0-9.]+ *ms/ ) {
 		# $1 = useless prefix string
 		# $2 = icmp_seq
 		# $3 = ttl
@@ -542,8 +537,7 @@ BEGIN{
 
 		seq = int($2)
 
-		while( last_seq < seq-1 )
-		{
+		while( last_seq < seq-1 ) {
 			# Lost a packet
 			print_newlines_if_needed()
 			print_missing_response()
@@ -572,9 +566,7 @@ BEGIN{
 
 		# Not really needed, uncomment if things get buggy
 		#fflush()
-	}
-	else
-	{
+	} else {
 		other_line_is_printed()
 		printf( "%s\n", $0 )
 	}
