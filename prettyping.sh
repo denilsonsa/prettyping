@@ -11,12 +11,12 @@
 # TODO: print the destination (also) at the bottom bar. Useful after leaving
 # the script running for quite some time.
 #
-# TODO: Test the behavior of this script upon receiving out-of-order packets, like these:
-#   http://www.blug.linux.no/rfc1149/pinglogg.txt
-#
 # TODO: Implement audible ping.
 #
 # TODO: Autodetect the width of printf numbers, so they will always line up correctly.
+#
+# TODO: Test the behavior of this script upon receiving out-of-order packets, like these:
+#   http://www.blug.linux.no/rfc1149/pinglogg.txt
 #
 # TODO? How will prettyping behave if it receives a duplicate response?
 
