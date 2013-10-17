@@ -39,7 +39,7 @@ of the ping responses.
 prettyping parameters:
   --[no]color      Enable/disable color output. (default: enabled)
   --[no]multicolor Enable/disable multi-color unicode output. Has no effect if
-                     unicode is disabled. (default: enabled)
+                     either color or unicode is disabled. (default: enabled)
   --[no]unicode    Enable/disable unicode characters. (default: enabled)
   --last <n>       Use the last "n" pings at the statistics line. (default: 25)
   --columns <n>    Override auto-detection of terminal dimensions.
@@ -503,7 +503,7 @@ BEGIN{
 		BLOCK[21] = ESC_RED_ON_YELLOW "▆"
 		BLOCK[22] = ESC_RED_ON_YELLOW "▇"
 		BLOCK[23] = ESC_RED_ON_YELLOW "█"
-		if( '"${USE_MULTICOLOR}"' )
+		if( '"${USE_MULTICOLOR}"' && '"${USE_COLOR}"' )
 		{
 			# Multi-color version:
 			BLOCK_LEN = 24
