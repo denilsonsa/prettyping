@@ -353,14 +353,24 @@ function print_missing_response(rtt) {
 # Functions related to printing statistics
 
 function print_overall() {
-	printf( "%2d/%3d (%2d%%) lost; %4.0f/" ESC_BOLD "%4.0f" ESC_DEFAULT "/%4.0fms; last: %4.0fms",
-		lost,
-		lost+received,
-		(lost*100/(lost+received)),
-		min_rtt,
-		(total_rtt/received),
-		max_rtt,
-		last_rtt )
+	if( '"${IS_TERMINAL}"' ) {
+		printf( "%2d/%3d (%2d%%) lost; %4.0f/" ESC_BOLD "%4.0f" ESC_DEFAULT "/%4.0fms; last: " ESC_BOLD "%4.0f" ESC_DEFAULT "ms",
+			lost,
+			lost+received,
+			(lost*100/(lost+received)),
+			min_rtt,
+			(total_rtt/received),
+			max_rtt,
+			last_rtt )
+	} else {
+		printf( "%2d/%3d (%2d%%) lost; %4.0f/" ESC_BOLD "%4.0f" ESC_DEFAULT "/%4.0fms",
+			lost,
+			lost+received,
+			(lost*100/(lost+received)),
+			min_rtt,
+			(total_rtt/received),
+			max_rtt )
+	}
 }
 
 function print_last_n(i, sum, min, avg, max, diffs) {
