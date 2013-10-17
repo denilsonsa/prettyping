@@ -14,11 +14,6 @@
 # TODO: Test the behavior of this script upon receiving out-of-order packets, like these:
 #   http://www.blug.linux.no/rfc1149/pinglogg.txt
 #
-# TODO: Implement "msg repeating", like...
-#   ping: sendmsg: Network is unreachable
-#   (repeated xx times)
-# where xx gets updated for every repeated line
-#
 # TODO: Implement audible ping.
 #
 # TODO: Autodetect the width of printf numbers, so they will always line up correctly.
@@ -236,6 +231,20 @@ function other_line_is_printed() {
 	CURR_COL = 0
 }
 
+# Function called whenever a non-dotted line is repeated.
+function other_line_is_repeated() {
+	if (other_line_times < 2) {
+		return
+	}
+	if( '"${IS_TERMINAL}"' ) {
+		printf( ESC_DEFAULT ESC_ERASELINE "\r" )
+	}
+	printf( "Last message repeated %d times.", other_line_times )
+	if( ! '"${IS_TERMINAL}"' ) {
+		printf( "\n" )
+	}
+}
+
 # Prints the newlines required for the live statistics.
 #
 # I need to print some newlines and then return the cursor back to its position
@@ -439,6 +448,10 @@ BEGIN {
 	# This is needed to keep track of lost packets
 	last_seq = 0
 
+	# The previously printed non-ping-response line
+	other_line = ""
+	other_line_times = 0
+
 	# Variables to keep the screen clean
 	IS_PRINTING_DOTS = 0
 	CURR_COL = 0
@@ -576,6 +589,16 @@ BEGIN {
 	# Sample line:
 	# 64 bytes from 8.8.8.8: icmp_seq=1 ttl=49 time=184 ms
 	if( $0 ~ /^[0-9]+ bytes from .*: icmp_[rs]eq=[0-9]+ ttl=[0-9]+ time=[0-9.]+ *ms/ ) {
+		if( other_line_times >= 2 ) {
+			if( '"${IS_TERMINAL}"' ) {
+				printf( "\n" )
+			} else {
+				other_line_is_repeated()
+			}
+		}
+		other_line = ""
+		other_line_times = 0
+
 		# $1 = useless prefix string
 		# $2 = icmp_seq
 		# $3 = ttl
@@ -608,9 +631,20 @@ BEGIN {
 		if( '"${IS_TERMINAL}"' ) {
 			print_statistics_bar()
 		}
+	} else if ( $0 == "" ) {
+		# Do nothing on blank lines.
 	} else {
 		other_line_is_printed()
-		printf( "%s\n", $0 )
+		if ( $0 == other_line ) {
+			other_line_times++
+			if( '"${IS_TERMINAL}"' ) {
+				other_line_is_repeated()
+			}
+		} else {
+			other_line = $0
+			other_line_times = 1
+			printf( "%s\n", $0 )
+		}
 	}
 
 	# Not needed when the output is a terminal, but does not hurt either.
