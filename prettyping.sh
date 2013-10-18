@@ -77,6 +77,8 @@ parse_arguments() {
 	RTT_MIN=auto
 	RTT_MAX=auto
 
+	PING_EXEC="ping"
+	#PING_EXEC="./mockping.awk"
 	PING_PARAMS=( )
 
 	while [[ $# != 0 ]] ; do
@@ -183,7 +185,7 @@ trap '' 2
 
 # Now the ugly code.
 (
-	ping "${PING_PARAMS[@]}" &
+	"${PING_EXEC}" "${PING_PARAMS[@]}" &
 	# Commented out, because it looks like this line is not needed
 	#trap "kill -2 $! ; exit 1" 2  # Catch Ctrl+C here
 	wait
