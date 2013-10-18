@@ -253,6 +253,19 @@ function other_line_is_repeated() {
 	}
 }
 
+# Function called whenever the repeating line has changed.
+function other_line_finished_repeating() {
+	if( other_line_times >= 2 ) {
+		if( '"${IS_TERMINAL}"' ) {
+			printf( "\n" )
+		} else {
+			other_line_is_repeated()
+		}
+	}
+	other_line = ""
+	other_line_times = 0
+}
+
 # Prints the newlines required for the live statistics.
 #
 # I need to print some newlines and then return the cursor back to its position
@@ -629,14 +642,8 @@ BEGIN {
 	# 64 bytes from 8.8.8.8: icmp_seq=1 ttl=49 time=184 ms
 	if( $0 ~ /^[0-9]+ bytes from .*: icmp_[rs]eq=[0-9]+ ttl=[0-9]+ time=[0-9.]+ *ms/ ) {
 		if( other_line_times >= 2 ) {
-			if( '"${IS_TERMINAL}"' ) {
-				printf( "\n" )
-			} else {
-				other_line_is_repeated()
-			}
+			other_line_finished_repeating()
 		}
-		other_line = ""
-		other_line_times = 0
 
 		# $1 = useless prefix string
 		# $2 = icmp_seq
@@ -680,6 +687,7 @@ BEGIN {
 				other_line_is_repeated()
 			}
 		} else {
+			other_line_finished_repeating()
 			other_line = $0
 			other_line_times = 1
 			printf( "%s\n", $0 )
