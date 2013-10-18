@@ -8,6 +8,9 @@
 # * gawk (GNU awk, tested on 4.0.1, should work on older versions too)
 # * ping (from iputils)
 
+# TODO: Detect the following kind of message and avoid printing it repeatedly.
+# From 192.168.1.11: icmp_seq=4 Destination Host Unreachable
+#
 # TODO: print the destination (also) at the bottom bar. Useful after leaving
 # the script running for quite some time.
 #
