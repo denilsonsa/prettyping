@@ -343,8 +343,8 @@ function process_rtt(rtt) {
 ############################################################
 # Functions related to printing the fancy ping response
 
-# block_index, n, w are just local variables.
-function print_response_legend(i, n, w) {
+# block_index, n, w, oddeven are just local variables.
+function print_response_legend(i, n, w, oddeven) {
 	if( ! '"${USE_LEGEND}"' ) {
 		return
 	}
@@ -365,6 +365,11 @@ function print_response_legend(i, n, w) {
 			if( '"${IS_TERMINAL}"' && w == COLUMNS ) {
 				printf( "\n" )
 				w = 0
+				oddeven = ! oddeven
+				if ( oddeven ) {
+					printf( " " )
+					w++
+				}
 			}
 			n = sprintf( "%4d ", BLOCK_RTT_MIN + ceil((i-1) * BLOCK_RTT_RANGE / (BLOCK_LEN - 2)) )
 			w += 1 + length(n)
@@ -372,7 +377,12 @@ function print_response_legend(i, n, w) {
 			# Avoid breaking the legend at the end of the line.
 			if( '"${IS_TERMINAL}"' && w > COLUMNS ) {
 				printf( "\n" )
-				w = 0
+				w = 1 + length(n)
+				oddeven = ! oddeven
+				if ( oddeven ) {
+					printf( " " )
+					w++
+				}
 			}
 
 			printf( BLOCK[i] ESC_DEFAULT n )
