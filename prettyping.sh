@@ -7,6 +7,11 @@
 # * bash (tested on 4.20, should work on older versions too)
 # * awk (works with GNU awk, nawk, busybox awk, mawk)
 # * ping (from iputils)
+#
+# More information:
+# http://my.opera.com/CrazyTerabyte/blog/2013/10/18/prettyping-sh-a-better-ui-for-watching-ping-responses
+# http://www.reddit.com/r/linux/comments/1op98a/prettypingsh_a_better_ui_for_watching_ping/
+# https://bitbucket.org/denilsonsa/small_scripts/
 
 # TODO: Detect the following kinds of message and avoid printing it repeatedly.
 # From 192.168.1.11: icmp_seq=4 Destination Host Unreachable
@@ -54,8 +59,7 @@ ping parameters handled by prettyping:
   -R  Record route mode is not allowed in prettyping.
   -v  Verbose output seems to be the default mode in ping.
 
-Tested with Linux ping tool from "iputils" package:
-http://www.linuxfoundation.org/collaborate/workgroups/networking/iputils
+All other parameters are passed directly to ping.
 EOF
 }
 
