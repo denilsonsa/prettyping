@@ -590,11 +590,12 @@ BEGIN {
 			BLOCK_RTT_MAX = 175
 		}
 	} else {
-		BLOCK[ 0] = ESC_GREEN "."
-		BLOCK[ 1] = ESC_GREEN "o"
-		BLOCK[ 2] = ESC_GREEN "O"
+		BLOCK[ 0] = ESC_GREEN "_"
+		BLOCK[ 1] = ESC_GREEN "."
+		BLOCK[ 2] = ESC_GREEN "o"
+		BLOCK[ 3] = ESC_GREEN "O"
 		# Simple version:
-		BLOCK_LEN = 3
+		BLOCK_LEN = 4
 		BLOCK_RTT_MIN = 75
 		BLOCK_RTT_MAX = 225
 	}
