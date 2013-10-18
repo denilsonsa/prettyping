@@ -5,7 +5,7 @@
 #
 # Requirements:
 # * bash (tested on 4.20, should work on older versions too)
-# * awk (works with GNU awk, nawk, busybox awk)
+# * awk (works with GNU awk, nawk, busybox awk, mawk)
 # * ping (from iputils)
 
 # TODO: Detect the following kinds of message and avoid printing it repeatedly.
@@ -44,6 +44,8 @@ prettyping parameters:
   --lines <n>      Override auto-detection of terminal dimensions.
   --rttmin <n>     Minimum RTT represented in the unicode graph. (default: auto)
   --rttmax <n>     Maximum RTT represented in the unicode graph. (default: auto)
+  --awkbin <exec>  Override the awk interpreter. (default: awk)
+  --pingbin <exec> Override the ping tool. (default: ping)
 
 ping parameters handled by prettyping:
   -a  Audible ping is not implemented yet.
@@ -77,9 +79,12 @@ parse_arguments() {
 	RTT_MIN=auto
 	RTT_MAX=auto
 
-	PING_EXEC="ping"
-	#PING_EXEC="./mockping.awk"
+	PING_BIN="ping"
+	#PING_BIN="./mockping.awk"
 	PING_PARAMS=( )
+
+	AWK_BIN="awk"
+	AWK_PARAMS=( )
 
 	while [[ $# != 0 ]] ; do
 		case "$1" in
@@ -127,6 +132,9 @@ parse_arguments() {
 			-terminal     | --terminal     ) IS_TERMINAL=1 ;;
 			-noterminal   | --noterminal   ) IS_TERMINAL=0 ;;
 
+			-awkbin  | --awkbin  ) AWK_BIN="$2"  ; shift ;;
+			-pingbin | --pingbin ) PING_BIN="$2" ; shift ;;
+
 			#TODO: Check if these parameters are numbers.
 			-last    | --last    ) LAST_N="$2"           ; shift ;;
 			-columns | --columns ) OVERRIDE_COLUMNS="$2" ; shift ;;
@@ -149,6 +157,13 @@ parse_arguments() {
 	if [[ "${#PING_PARAMS[@]}" = 0 ]] ; then
 		echo "${MYNAME}: Missing parameters, use --help for instructions."
 		exit 1
+	fi
+
+	# Workaround for mawk:
+	# http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=593504
+	local version="$(echo | "${AWK_BIN}" -W version 2>&1)"
+	if [[ "${version}" == mawk* ]] ; then
+		AWK_PARAMS+=(-W interactive)
 	fi
 }
 
@@ -185,11 +200,11 @@ trap '' 2
 
 # Now the ugly code.
 (
-	"${PING_EXEC}" "${PING_PARAMS[@]}" &
+	"${PING_BIN}" "${PING_PARAMS[@]}" &
 	# Commented out, because it looks like this line is not needed
 	#trap "kill -2 $! ; exit 1" 2  # Catch Ctrl+C here
 	wait
-) 2>&1 | awk '
+) 2>&1 | "${AWK_BIN}" "${AWK_PARAMS[@]}" '
 # Weird that awk does not come with abs(), so I need to implement it.
 function abs(x) {
 	return ( (x < 0) ? -x : x )
