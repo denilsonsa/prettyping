@@ -326,7 +326,7 @@ function process_rtt(rtt) {
 
 # block_index is just a local variable.
 function print_response_legend(i) {
-	if( '"${USE_UNICODE}"' ) {
+	if( BLOCK_LEN > 1 ) {
 		printf( BLOCK[0] ESC_DEFAULT "%4d ", 0)
 		for( i=1 ; i<BLOCK_LEN ; i++ ) {
 			printf( BLOCK[i] ESC_DEFAULT "%4d ",
@@ -344,18 +344,14 @@ function print_response_legend(i) {
 
 # block_index is just a local variable.
 function print_received_response(rtt, block_index) {
-	if( '"${USE_UNICODE}"' ) {
-		if( rtt < BLOCK_RTT_MIN ) {
-			block_index = 0
-		} else if( rtt >= BLOCK_RTT_MAX ) {
-			block_index = BLOCK_LEN - 1
-		} else {
-			block_index = 1 + int((rtt - BLOCK_RTT_MIN) * (BLOCK_LEN - 2) / BLOCK_RTT_RANGE)
-		}
-		printf( BLOCK[block_index] )
+	if( rtt < BLOCK_RTT_MIN ) {
+		block_index = 0
+	} else if( rtt >= BLOCK_RTT_MAX ) {
+		block_index = BLOCK_LEN - 1
 	} else {
-		printf( ESC_GREEN "." )
+		block_index = 1 + int((rtt - BLOCK_RTT_MIN) * (BLOCK_LEN - 2) / BLOCK_RTT_RANGE)
 	}
+	printf( BLOCK[block_index] )
 }
 
 function print_missing_response(rtt) {
@@ -570,21 +566,29 @@ BEGIN {
 			BLOCK_RTT_MIN = 25
 			BLOCK_RTT_MAX = 175
 		}
-
-		if( int('"${RTT_MIN}"') > 0 && int('"${RTT_MAX}"') > 0 ) {
-			BLOCK_RTT_MIN = int('"${RTT_MIN}"')
-			BLOCK_RTT_MAX = int('"${RTT_MAX}"')
-		} else if( int('"${RTT_MIN}"') > 0 ) {
-			BLOCK_RTT_MIN = int('"${RTT_MIN}"')
-			BLOCK_RTT_MAX = BLOCK_RTT_MIN * (BLOCK_LEN - 1)
-		} else if( int('"${RTT_MAX}"') > 0 ) {
-			BLOCK_RTT_MAX = int('"${RTT_MAX}"')
-			BLOCK_RTT_MIN = int(BLOCK_RTT_MAX / (BLOCK_LEN - 1))
-		}
-
-		BLOCK_RTT_RANGE = BLOCK_RTT_MAX - BLOCK_RTT_MIN
-		print_response_legend()
+	} else {
+		BLOCK[ 0] = ESC_GREEN "."
+		BLOCK[ 1] = ESC_GREEN "o"
+		BLOCK[ 2] = ESC_GREEN "O"
+		# Simple version:
+		BLOCK_LEN = 3
+		BLOCK_RTT_MIN = 75
+		BLOCK_RTT_MAX = 225
 	}
+
+	if( int('"${RTT_MIN}"') > 0 && int('"${RTT_MAX}"') > 0 ) {
+		BLOCK_RTT_MIN = int('"${RTT_MIN}"')
+		BLOCK_RTT_MAX = int('"${RTT_MAX}"')
+	} else if( int('"${RTT_MIN}"') > 0 ) {
+		BLOCK_RTT_MIN = int('"${RTT_MIN}"')
+		BLOCK_RTT_MAX = BLOCK_RTT_MIN * (BLOCK_LEN - 1)
+	} else if( int('"${RTT_MAX}"') > 0 ) {
+		BLOCK_RTT_MAX = int('"${RTT_MAX}"')
+		BLOCK_RTT_MIN = int(BLOCK_RTT_MAX / (BLOCK_LEN - 1))
+	}
+
+	BLOCK_RTT_RANGE = BLOCK_RTT_MAX - BLOCK_RTT_MIN
+	print_response_legend()
 }
 
 ############################################################
