@@ -324,13 +324,36 @@ function process_rtt(rtt) {
 ############################################################
 # Functions related to printing the fancy ping response
 
-# block_index is just a local variable.
-function print_response_legend(i) {
+# block_index, n, w are just local variables.
+function print_response_legend(i, n, w) {
 	if( BLOCK_LEN > 1 ) {
-		printf( BLOCK[0] ESC_DEFAULT "%4d ", 0)
+		# w counts the cursor position in the current line. Because of the
+		# escape codes, I need to jump through some hoops in order to count the
+		# position correctly.
+		w = 0
+		n = sprintf( "%4d ", 0 )
+		w += 1 + length(n)
+
+		printf( BLOCK[0] ESC_DEFAULT n )
+
 		for( i=1 ; i<BLOCK_LEN ; i++ ) {
-			printf( BLOCK[i] ESC_DEFAULT "%4d ",
-				BLOCK_RTT_MIN + ceil((i-1) * BLOCK_RTT_RANGE / (BLOCK_LEN - 2)) )
+			# Workaround for when there is a background color change right at
+			# the edge of the screen. When it happens, the entire next line
+			# will have that background color, which is not desired.
+			if( '"${IS_TERMINAL}"' && w == COLUMNS ) {
+				printf( "\n" )
+				w = 0
+			}
+			n = sprintf( "%4d ", BLOCK_RTT_MIN + ceil((i-1) * BLOCK_RTT_RANGE / (BLOCK_LEN - 2)) )
+			w += 1 + length(n)
+
+			# Avoid breaking the legend at the end of the line.
+			if( '"${IS_TERMINAL}"' && w > COLUMNS ) {
+				printf( "\n" )
+				w = 0
+			}
+
+			printf( BLOCK[i] ESC_DEFAULT n )
 		}
 		printf( "\n" )
 	}
