@@ -5,7 +5,7 @@
 #
 # Requirements:
 # * bash (tested on 4.20, should work on older versions too)
-# * gawk (GNU awk, tested on 4.0.1, should work on older versions too)
+# * awk (works with GNU awk, nawk, busybox awk)
 # * ping (from iputils)
 
 # TODO: Detect the following kinds of message and avoid printing it repeatedly.
@@ -183,7 +183,7 @@ trap '' 2
 	# Commented out, because it looks like this line is not needed
 	#trap "kill -2 $! ; exit 1" 2  # Catch Ctrl+C here
 	wait
-) 2>&1 | gawk '
+) 2>&1 | awk '
 # Weird that awk does not come with abs(), so I need to implement it.
 function abs(x) {
 	return ( (x < 0) ? -x : x )
