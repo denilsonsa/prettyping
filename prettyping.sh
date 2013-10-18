@@ -37,6 +37,7 @@ prettyping parameters:
   --[no]multicolor Enable/disable multi-color unicode output. Has no effect if
                      either color or unicode is disabled. (default: enabled)
   --[no]unicode    Enable/disable unicode characters. (default: enabled)
+  --[no]legend     Enable/disable the latency legend. (default: enabled)
   --[no]terminal   Force the output designed to a terminal. (default: auto)
   --last <n>       Use the last "n" pings at the statistics line. (default: 60)
   --columns <n>    Override auto-detection of terminal dimensions.
@@ -62,6 +63,7 @@ parse_arguments() {
 	USE_COLOR=1
 	USE_MULTICOLOR=1
 	USE_UNICODE=1
+	USE_LEGEND=1
 
 	if [ -t 1 ]; then
 		IS_TERMINAL=1
@@ -118,6 +120,8 @@ parse_arguments() {
 			-nomulticolor | --nomulticolor ) USE_MULTICOLOR=0 ;;
 			-unicode      | --unicode      ) USE_UNICODE=1 ;;
 			-nounicode    | --nounicode    ) USE_UNICODE=0 ;;
+			-legend       | --legend       ) USE_LEGEND=1 ;;
+			-nolegend     | --nolegend     ) USE_LEGEND=0 ;;
 			-terminal     | --terminal     ) IS_TERMINAL=1 ;;
 			-noterminal   | --noterminal   ) IS_TERMINAL=0 ;;
 
@@ -326,6 +330,9 @@ function process_rtt(rtt) {
 
 # block_index, n, w are just local variables.
 function print_response_legend(i, n, w) {
+	if( ! '"${USE_LEGEND}"' ) {
+		return
+	}
 	if( BLOCK_LEN > 1 ) {
 		# w counts the cursor position in the current line. Because of the
 		# escape codes, I need to jump through some hoops in order to count the
