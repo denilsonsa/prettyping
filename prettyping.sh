@@ -51,6 +51,7 @@ prettyping parameters:
   --rttmax <n>     Maximum RTT represented in the unicode graph. (default: auto)
   --awkbin <exec>  Override the awk interpreter. (default: awk)
   --pingbin <exec> Override the ping tool. (default: ping)
+  -6               Shortcut for: --pingbin ping6
 
 ping parameters handled by prettyping:
   -a  Audible ping is not implemented yet.
@@ -138,6 +139,7 @@ parse_arguments() {
 
 			-awkbin  | --awkbin  ) AWK_BIN="$2"  ; shift ;;
 			-pingbin | --pingbin ) PING_BIN="$2" ; shift ;;
+			-6 ) PING_BIN="ping6" ;;
 
 			#TODO: Check if these parameters are numbers.
 			-last    | --last    ) LAST_N="$2"           ; shift ;;
