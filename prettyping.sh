@@ -558,7 +558,7 @@ BEGIN {
 
 	# Auto-detecting the terminal size
 	HAS_STTY = 1
-	STTY_CMD = "stty size --file=/dev/tty 2> /dev/null"
+	STTY_CMD = "stty --file=/dev/tty size 2> /dev/null"
 	get_terminal_size()
 	if( '"${IS_TERMINAL}"' && COLUMNS <= 50 ) {
 		print "Warning: terminal width is too small."
