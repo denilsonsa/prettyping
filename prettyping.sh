@@ -703,7 +703,10 @@ BEGIN {
 		print_newlines_if_needed()
 		print_received_response(rtt)
 
-		last_seq++
+		# In case of receiving multiple responses with the same seq number, it
+		# is better to use "last_seq = seq" than to increment last_seq.
+		last_seq = seq
+
 		received++
 		store(lastn_lost, 0)
 
