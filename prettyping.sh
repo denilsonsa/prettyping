@@ -17,8 +17,12 @@
 # From 192.168.1.11: icmp_seq=4 Destination Host Unreachable
 # Request timeout for icmp_seq 378
 #
-# TODO: print the destination (also) at the bottom bar. Useful after leaving
+# TODO: Print the destination (also) at the bottom bar. Useful after leaving
 # the script running for quite some time.
+#
+# TODO: Print the destination as escape codes to xterm title.
+#
+# TODO: Print the current time in the beginning of each line.
 #
 # TODO: Implement audible ping.
 #
