@@ -651,10 +651,25 @@ BEGIN {
 		BLOCK[ 1] = ESC_GREEN "."
 		BLOCK[ 2] = ESC_GREEN "o"
 		BLOCK[ 3] = ESC_GREEN "O"
-		# Simple version:
-		BLOCK_LEN = 4
-		BLOCK_RTT_MIN = 75
-		BLOCK_RTT_MAX = 225
+		BLOCK[ 4] = ESC_YELLOW "_"
+		BLOCK[ 5] = ESC_YELLOW "."
+		BLOCK[ 6] = ESC_YELLOW "o"
+		BLOCK[ 7] = ESC_YELLOW "O"
+		BLOCK[ 8] = ESC_RED "_"
+		BLOCK[ 9] = ESC_RED "."
+		BLOCK[10] = ESC_RED "o"
+		BLOCK[11] = ESC_RED "O"
+		if( '"${USE_MULTICOLOR}"' && '"${USE_COLOR}"' ) {
+			# Multi-color version:
+			BLOCK_LEN = 12
+			BLOCK_RTT_MIN = 20
+			BLOCK_RTT_MAX = 220
+		} else {
+			# Simple version:
+			BLOCK_LEN = 4
+			BLOCK_RTT_MIN = 75
+			BLOCK_RTT_MAX = 225
+		}
 	}
 
 	if( int('"${RTT_MIN}"') > 0 && int('"${RTT_MAX}"') > 0 ) {
