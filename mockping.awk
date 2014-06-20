@@ -34,6 +34,6 @@ rtt min/avg/max/mdev = 36.750/38.535/40.048/1.360 ms\n\
 
 	for (i = 0; i < LEN; i++) {
 		print ARRAY[i]
-		system("sleep 0")
+		system("sleep 1")
 	}
 }
