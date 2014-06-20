@@ -734,6 +734,8 @@ BEGIN {
 		}
 	} else if ( $0 == "" ) {
 		# Do nothing on blank lines.
+	} else if( $0 ~ /^Request timeout for icmp_seq [0-9]+/ ) {
+		# Do nothing on reply timeout (happens on Mac OS X)
 	} else {
 		other_line_is_printed()
 		if ( $0 == other_line ) {

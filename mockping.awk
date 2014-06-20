@@ -1,4 +1,4 @@
-#!/bin/awk -f
+#!/usr/bin/awk -f
 
 BEGIN {
 	HUGE_STRING = "\n\
@@ -18,6 +18,12 @@ Request timeout for icmp_seq 6\n\
 64 bytes from registro.br (200.160.2.3): icmp_seq=7 ttl=56 time=123 ms\n\
 64 bytes from registro.br (200.160.2.3): icmp_seq=8 ttl=56 time=149 ms\n\
 64 bytes from registro.br (200.160.2.3): icmp_seq=9 ttl=56 time=183 ms\n\
+Request timeout for icmp_seq 10\n\
+Request timeout for icmp_seq 11\n\
+Request timeout for icmp_seq 12\n\
+64 bytes from registro.br (200.160.2.3): icmp_seq=13 ttl=56 time=123 ms\n\
+64 bytes from registro.br (200.160.2.3): icmp_seq=14 ttl=56 time=149 ms\n\
+64 bytes from registro.br (200.160.2.3): icmp_seq=15 ttl=56 time=183 ms\n\
 \n\
 --- registro.br ping statistics ---\n\
 3 packets transmitted, 3 received, 0% packet loss, time 2000ms\n\
@@ -28,6 +34,6 @@ rtt min/avg/max/mdev = 36.750/38.535/40.048/1.360 ms\n\
 
 	for (i = 0; i < LEN; i++) {
 		print ARRAY[i]
-		system("sleep 1")
+		system("sleep 0")
 	}
 }
