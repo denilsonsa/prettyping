@@ -3,30 +3,31 @@
 BEGIN {
 	HUGE_STRING = "\n\
 PING registro.br (200.160.2.3) 56(84) bytes of data.\n\
-64 bytes from registro.br (200.160.2.3): icmp_seq=1 ttl=56 time=25.5 ms\n\
-64 bytes from registro.br (200.160.2.3): icmp_seq=2 ttl=56 time=55.7 ms\n\
-64 bytes from registro.br (200.160.2.3): icmp_seq=3 ttl=56 time=75.2 ms\n\
+Request timeout for icmp_seq 1\n\
+64 bytes from registro.br (200.160.2.3): icmp_seq=2 ttl=56 time=25.5 ms\n\
+64 bytes from registro.br (200.160.2.3): icmp_seq=3 ttl=56 time=55.7 ms\n\
+64 bytes from registro.br (200.160.2.3): icmp_seq=4 ttl=56 time=75.2 ms\n\
 ping: sendto: Network is down\n\
 ping: sendto: No route to host\n\
 ping: sendto: No route to host\n\
 ping: sendto: No route to host\n\
 ping: sendto: No route to host\n\
 ping: sendto: No route to host\n\
-Request timeout for icmp_seq 4\n\
 Request timeout for icmp_seq 5\n\
 Request timeout for icmp_seq 6\n\
-64 bytes from registro.br (200.160.2.3): icmp_seq=7 ttl=56 time=123 ms\n\
-64 bytes from registro.br (200.160.2.3): icmp_seq=8 ttl=56 time=149 ms\n\
-64 bytes from registro.br (200.160.2.3): icmp_seq=9 ttl=56 time=183 ms\n\
-Request timeout for icmp_seq 10\n\
+Request timeout for icmp_seq 7\n\
+64 bytes from registro.br (200.160.2.3): icmp_seq=8 ttl=56 time=123 ms\n\
+64 bytes from registro.br (200.160.2.3): icmp_seq=9 ttl=56 time=149 ms\n\
+64 bytes from registro.br (200.160.2.3): icmp_seq=10 ttl=56 time=183 ms\n\
 Request timeout for icmp_seq 11\n\
 Request timeout for icmp_seq 12\n\
-64 bytes from registro.br (200.160.2.3): icmp_seq=13 ttl=56 time=123 ms\n\
-64 bytes from registro.br (200.160.2.3): icmp_seq=14 ttl=56 time=149 ms\n\
-64 bytes from registro.br (200.160.2.3): icmp_seq=15 ttl=56 time=183 ms\n\
-64 bytes from registro.br (200.160.2.3): icmp_seq=18 ttl=56 time=183 ms\n\
+Request timeout for icmp_seq 13\n\
+64 bytes from registro.br (200.160.2.3): icmp_seq=14 ttl=56 time=123 ms\n\
+64 bytes from registro.br (200.160.2.3): icmp_seq=15 ttl=56 time=149 ms\n\
+64 bytes from registro.br (200.160.2.3): icmp_seq=16 ttl=56 time=183 ms\n\
 64 bytes from registro.br (200.160.2.3): icmp_seq=19 ttl=56 time=183 ms\n\
 64 bytes from registro.br (200.160.2.3): icmp_seq=20 ttl=56 time=183 ms\n\
+64 bytes from registro.br (200.160.2.3): icmp_seq=21 ttl=56 time=183 ms\n\
 \n\
 --- registro.br ping statistics ---\n\
 3 packets transmitted, 3 received, 0% packet loss, time 2000ms\n\

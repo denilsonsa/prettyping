@@ -450,33 +450,44 @@ function print_missing_response(rtt) {
 ############################################################
 # Functions related to printing statistics
 
-function print_overall() {
+# All arguments are just local variables.
+function print_overall(percentage_lost, avg_rtt) {
+	# Handling division by zero.
+	# Note that mawk does not consider division by zero an error, while all
+	# other awk implementations abort in such case.
+	# https://stackoverflow.com/questions/14581966/why-does-awk-produce-different-results-for-division-by-zero
+
+	avg_rtt = ( received > 0 ) ? (total_rtt/received) : 0
+	percentage_lost = ( lost+received > 0 ) ? (lost*100/(lost+received)) : 0
+
 	if( '"${IS_TERMINAL}"' ) {
 		printf( "%2d/%3d (%2d%%) lost; %4.0f/" ESC_BOLD "%4.0f" ESC_DEFAULT "/%4.0fms; last: " ESC_BOLD "%4.0f" ESC_DEFAULT "ms",
 			lost,
 			lost+received,
-			(lost*100/(lost+received)),
+			percentage_lost,
 			min_rtt,
-			(total_rtt/received),
+			avg_rtt,
 			max_rtt,
 			last_rtt )
 	} else {
 		printf( "%2d/%3d (%2d%%) lost; %4.0f/" ESC_BOLD "%4.0f" ESC_DEFAULT "/%4.0fms",
 			lost,
 			lost+received,
-			(lost*100/(lost+received)),
+			percentage_lost,
 			min_rtt,
-			(total_rtt/received),
+			avg_rtt,
 			max_rtt )
 	}
 }
 
-function print_last_n(i, sum, min, avg, max, diffs) {
+# All arguments are just local variables.
+function print_last_n(i, percentage_lost, sum, min, avg, max, diffs) {
 	# Calculate and print the lost packets statistics
 	sum = 0
 	for( i=0 ; i<lastn_lost["size"] ; i++ ) {
 		sum += lastn_lost[i]
 	}
+	percentage_lost = (lastn_lost["size"] > 0) ? (sum*100/lastn_lost["size"]) : 0
 	printf( "%2d/%3d (%2d%%) lost; ",
 		sum,
 		lastn_lost["size"],
@@ -490,13 +501,15 @@ function print_last_n(i, sum, min, avg, max, diffs) {
 		if( lastn_rtt[i] < min ) min = lastn_rtt[i]
 		if( lastn_rtt[i] > max ) max = lastn_rtt[i]
 	}
-	avg = sum/lastn_rtt["size"]
+	avg = (lastn_rtt["size"]) ? (sum/lastn_rtt["size"]) : 0
 
 	# Calculate mdev (mean absolute deviation)
 	for( i=0 ; i<lastn_rtt["size"] ; i++ ) {
 		diffs += abs(lastn_rtt[i] - avg)
 	}
-	diffs /= lastn_rtt["size"]
+	if( lastn_rtt["size"] > 0 ) {
+		diffs /= lastn_rtt["size"]
+	}
 
 	# Print the rtt statistics
 	printf( "%4.0f/" ESC_BOLD "%4.0f" ESC_DEFAULT "/%4.0f/%4.0fms (last %d)",
