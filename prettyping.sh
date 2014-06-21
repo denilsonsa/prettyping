@@ -365,6 +365,15 @@ function process_rtt(rtt) {
 	store(lastn_rtt,rtt)
 }
 
+function lost_a_packet() {
+	print_newlines_if_needed()
+	print_missing_response()
+
+	last_seq++
+	lost++
+	store(lastn_lost, 1)
+}
+
 ############################################################
 # Functions related to printing the fancy ping response
 
@@ -513,6 +522,12 @@ function print_statistics_bar() {
 		printf( "\n" )
 		print_last_n()
 		printf( "\n" )
+	}
+}
+
+function print_statistics_bar_if_terminal() {
+	if( '"${IS_TERMINAL}"' ) {
+		print_statistics_bar()
 	}
 }
 
@@ -709,13 +724,7 @@ BEGIN {
 		seq = int($2)
 
 		while( last_seq < seq - 1 ) {
-			# Lost a packet
-			print_newlines_if_needed()
-			print_missing_response()
-
-			last_seq++
-			lost++
-			store(lastn_lost, 1)
+			lost_a_packet()
 		}
 
 		# Received a packet
@@ -729,13 +738,25 @@ BEGIN {
 		received++
 		store(lastn_lost, 0)
 
-		if( '"${IS_TERMINAL}"' ) {
-			print_statistics_bar()
-		}
+		print_statistics_bar_if_terminal()
 	} else if ( $0 == "" ) {
 		# Do nothing on blank lines.
 	} else if( $0 ~ /^Request timeout for icmp_seq [0-9]+/ ) {
-		# Do nothing on reply timeout (happens on Mac OS X)
+		# Reply timeout is printed on Mac OS X.
+
+		if( other_line_times >= 2 ) {
+			other_line_finished_repeating()
+		}
+
+		lost_a_packet()
+
+		# Making sure the last_seq number is correct.
+		gsub(/.* icmp_seq /, "")
+		seq = int($0)
+		last_seq = seq
+
+		print_newlines_if_needed()
+		print_statistics_bar_if_terminal()
 	} else {
 		other_line_is_printed()
 		if ( $0 == other_line ) {

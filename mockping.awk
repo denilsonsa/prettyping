@@ -24,6 +24,9 @@ Request timeout for icmp_seq 12\n\
 64 bytes from registro.br (200.160.2.3): icmp_seq=13 ttl=56 time=123 ms\n\
 64 bytes from registro.br (200.160.2.3): icmp_seq=14 ttl=56 time=149 ms\n\
 64 bytes from registro.br (200.160.2.3): icmp_seq=15 ttl=56 time=183 ms\n\
+64 bytes from registro.br (200.160.2.3): icmp_seq=18 ttl=56 time=183 ms\n\
+64 bytes from registro.br (200.160.2.3): icmp_seq=19 ttl=56 time=183 ms\n\
+64 bytes from registro.br (200.160.2.3): icmp_seq=20 ttl=56 time=183 ms\n\
 \n\
 --- registro.br ping statistics ---\n\
 3 packets transmitted, 3 received, 0% packet loss, time 2000ms\n\
@@ -34,6 +37,6 @@ rtt min/avg/max/mdev = 36.750/38.535/40.048/1.360 ms\n\
 
 	for (i = 0; i < LEN; i++) {
 		print ARRAY[i]
-		system("sleep 1")
+		system("sleep 0.5s")
 	}
 }
