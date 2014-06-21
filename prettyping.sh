@@ -9,9 +9,10 @@
 # * ping (from iputils)
 #
 # More information:
-# http://my.opera.com/CrazyTerabyte/blog/2013/10/18/prettyping-sh-a-better-ui-for-watching-ping-responses
+# http://web.archive.org/web/20131202002837/http://my.opera.com/CrazyTerabyte/blog/2013/10/18/prettyping-sh-a-better-ui-for-watching-ping-responses
 # http://www.reddit.com/r/linux/comments/1op98a/prettypingsh_a_better_ui_for_watching_ping/
 # https://bitbucket.org/denilsonsa/small_scripts/
+# Third-party demonstration video: https://www.youtube.com/watch?v=ziEMY1BcikM
 
 # TODO: Detect the following kinds of message and avoid printing it repeatedly.
 # From 192.168.1.11: icmp_seq=4 Destination Host Unreachable
