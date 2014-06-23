@@ -212,9 +212,23 @@ trap '' 2
 # Now the ugly code.
 (
 	"${PING_BIN}" "${PING_PARAMS[@]}" &
+	PING_PID="$!"
+
 	# Commented out, because it looks like this line is not needed
-	#trap "kill -2 $! ; exit 1" 2  # Catch Ctrl+C here
+	#trap "kill -2 $PING_PID ; exit 1" 2  # Catch Ctrl+C here
+
 	wait
+) 2>&1 | (
+	if [ "${IS_TERMINAL}" = 1 ]; then
+		# Print a message to notify the awk script about terminal size change.
+		trap "echo SIGWINCH" 28
+	fi
+
+	# The trap must be in another subshell because otherwise it will interrupt
+	# the "wait" commmand.
+	while read line; do
+		echo -E "$line"
+	done
 ) 2>&1 | "${AWK_BIN}" "${AWK_PARAMS[@]}" '
 # Weird that awk does not come with abs(), so I need to implement it.
 function abs(x) {
@@ -338,7 +352,6 @@ function print_newlines_if_needed() {
 			print_statistics_bar()
 		}
 	}
-	CURR_COL++
 	IS_PRINTING_DOTS = 1
 }
 
@@ -460,10 +473,12 @@ function print_received_response(rtt, block_index) {
 		block_index = 1 + int((rtt - BLOCK_RTT_MIN) * (BLOCK_LEN - 2) / BLOCK_RTT_RANGE)
 	}
 	printf( BLOCK[block_index] )
+	CURR_COL++
 }
 
 function print_missing_response(rtt) {
 	printf( ESC_RED "!" )
+	CURR_COL++
 }
 
 ############################################################
@@ -510,7 +525,7 @@ function print_last_n(i, percentage_lost, sum, min, avg, max, diffs) {
 	printf( "%2d/%3d (%2d%%) lost; ",
 		sum,
 		lastn_lost["size"],
-		sum*100/lastn_lost["size"] )
+		percentage_lost )
 
 	# Calculate the min/avg/max rtt times
 	sum = diffs = 0
@@ -636,13 +651,15 @@ BEGIN {
 	# Other escape codes, see:
 	# http://en.wikipedia.org/wiki/ANSI_escape_code
 	# http://invisible-island.net/xterm/ctlseqs/ctlseqs.html
-	ESC_NEXTLINE   = "\n"
-	ESC_CURSORUP   = "\033[A"
-	ESC_SCROLLUP   = "\033[S"
-	ESC_SCROLLDOWN = "\033[T"
-	ESC_ERASELINE  = "\033[2K"
-	ESC_SAVEPOS    = "\0337"
-	ESC_UNSAVEPOS  = "\0338"
+	ESC_NEXTLINE     = "\n"
+	ESC_CURSORUP     = "\033[A"
+	ESC_CURSORDOWN   = "\033[B"
+	ESC_SCROLLUP     = "\033[S"
+	ESC_SCROLLDOWN   = "\033[T"
+	ESC_ERASELINEEND = "\033[0K"
+	ESC_ERASELINE    = "\033[2K"
+	ESC_SAVEPOS      = "\0337"
+	ESC_UNSAVEPOS    = "\0338"
 
 	# I am avoiding these escapes as they are not listed in:
 	# http://vt100.net/docs/vt100-ug/chapter3.html
@@ -787,6 +804,22 @@ BEGIN {
 
 		print_newlines_if_needed()
 		print_statistics_bar_if_terminal()
+	} else if( $0 ~ /^SIGWINCH$/ ) {
+		get_terminal_size()
+
+		if( IS_PRINTING_DOTS ) {
+			if( CURR_COL >= COLUMNS-1 ) {
+				# Not enough space anyway.
+			} else {
+				# Making up room in case the number of lines has changed.
+				printf( ESC_NEXTLINE ESC_NEXTLINE ESC_CURSORUP ESC_CURSORUP )
+				# Moving to the correct column and erasing the rest of the line.
+				printf( "\033[" (CURR_COL+1) "G" ESC_DEFAULT ESC_ERASELINEEND )
+			}
+
+			print_newlines_if_needed()
+			print_statistics_bar_if_terminal()
+		}
 	} else {
 		other_line_is_printed()
 		if ( $0 == other_line ) {
