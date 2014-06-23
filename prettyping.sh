@@ -232,17 +232,35 @@ function ceil(x) {
 #
 # Local variables MUST be declared in argument list, else they are
 # seen as global. Ugly, but that is how awk works.
-function get_terminal_size(SIZE,SIZEA) {
-	if( HAS_STTY ) {
-		if( (STTY_CMD | getline SIZE) == 1 ) {
+function get_terminal_size(SIZE, SIZEA, HAS_DETECTED, CMD) {
+	HAS_DETECTED = 0
+
+	CMD = "tput lines"
+	if( (CMD | getline SIZE) == 1 ) {
+		LINES = SIZE
+		HAS_DETECTED = 1
+	}
+	close(CMD)
+
+	CMD = "tput cols"
+	if( (CMD | getline SIZE) == 1 ) {
+		COLUMNS = SIZE
+		HAS_DETECTED = 1
+	}
+	close(CMD)
+
+	if( HAS_DETECTED == 0 ) {
+		CMD = "stty --file=/dev/tty size 2> /dev/null"
+
+		if( (CMD | getline SIZE) == 1 ) {
 			split(SIZE, SIZEA, " ")
 			LINES   = SIZEA[1]
 			COLUMNS = SIZEA[2]
-		} else {
-			HAS_STTY = 0
+			HAS_DETECTED = 1
 		}
-		close(STTY_CMD)
+		close(CMD)
 	}
+
 	if ( int('"${OVERRIDE_COLUMNS}"') ) { COLUMNS = int('"${OVERRIDE_COLUMNS}"') }
 	if ( int('"${OVERRIDE_LINES}"')   ) { LINES   = int('"${OVERRIDE_LINES}"')   }
 }
@@ -583,15 +601,13 @@ BEGIN {
 	clear(lastn_rtt)
 
 	############################################################
-	# Terminal height and width 
+	# Terminal height and width
 
 	# These are sane defaults, in case we cannot query the actual terminal size
 	LINES    = 24
 	COLUMNS  = 80
 
 	# Auto-detecting the terminal size
-	HAS_STTY = 1
-	STTY_CMD = "stty --file=/dev/tty size 2> /dev/null"
 	get_terminal_size()
 	if( '"${IS_TERMINAL}"' && COLUMNS <= 50 ) {
 		print "Warning: terminal width is too small."
