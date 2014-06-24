@@ -264,7 +264,7 @@ function get_terminal_size(SIZE, SIZEA, HAS_DETECTED, CMD) {
 	close(CMD)
 
 	if( HAS_DETECTED == 0 ) {
-		CMD = "stty --file=/dev/tty size 2> /dev/null"
+		CMD = "stty --file /dev/tty size 2> /dev/null"
 
 		if( (CMD | getline SIZE) == 1 ) {
 			split(SIZE, SIZEA, " ")
