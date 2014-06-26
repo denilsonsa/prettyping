@@ -249,27 +249,27 @@ function ceil(x) {
 function get_terminal_size(SIZE, SIZEA, HAS_DETECTED, CMD) {
 	HAS_DETECTED = 0
 
-	CMD = "tput lines"
-	if( (CMD | getline SIZE) == 1 ) {
-		LINES = SIZE
-		HAS_DETECTED = 1
-	}
-	close(CMD)
+	CMD = "stty --file /dev/tty size 2> /dev/null"
 
-	CMD = "tput cols"
 	if( (CMD | getline SIZE) == 1 ) {
-		COLUMNS = SIZE
+		split(SIZE, SIZEA, " ")
+		LINES   = SIZEA[1]
+		COLUMNS = SIZEA[2]
 		HAS_DETECTED = 1
 	}
 	close(CMD)
 
 	if( HAS_DETECTED == 0 ) {
-		CMD = "stty --file /dev/tty size 2> /dev/null"
-
+		CMD = "tput lines"
 		if( (CMD | getline SIZE) == 1 ) {
-			split(SIZE, SIZEA, " ")
-			LINES   = SIZEA[1]
-			COLUMNS = SIZEA[2]
+			LINES = SIZE
+			HAS_DETECTED = 1
+		}
+		close(CMD)
+
+		CMD = "tput cols"
+		if( (CMD | getline SIZE) == 1 ) {
+			COLUMNS = SIZE
 			HAS_DETECTED = 1
 		}
 		close(CMD)
