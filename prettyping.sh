@@ -253,8 +253,8 @@ function get_terminal_size(SIZE, SIZEA, HAS_DETECTED, CMD) {
 
 	if( (CMD | getline SIZE) == 1 ) {
 		split(SIZE, SIZEA, " ")
-		LINES   = SIZEA[1]
-		COLUMNS = SIZEA[2]
+		LINES   = int(SIZEA[1])
+		COLUMNS = int(SIZEA[2])
 		HAS_DETECTED = 1
 	}
 	close(CMD)
@@ -262,14 +262,14 @@ function get_terminal_size(SIZE, SIZEA, HAS_DETECTED, CMD) {
 	if( HAS_DETECTED == 0 ) {
 		CMD = "tput lines"
 		if( (CMD | getline SIZE) == 1 ) {
-			LINES = SIZE
+			LINES = int(SIZE)
 			HAS_DETECTED = 1
 		}
 		close(CMD)
 
 		CMD = "tput cols"
 		if( (CMD | getline SIZE) == 1 ) {
-			COLUMNS = SIZE
+			COLUMNS = int(SIZE)
 			HAS_DETECTED = 1
 		}
 		close(CMD)
