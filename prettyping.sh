@@ -822,6 +822,8 @@ BEGIN {
 		}
 	} else {
 		other_line_is_printed()
+		original_line = $0
+		gsub(/icmp_seq[= ][0-9]+/, "")
 		if ( $0 == other_line ) {
 			other_line_times++
 			if( '"${IS_TERMINAL}"' ) {
@@ -831,7 +833,7 @@ BEGIN {
 			other_line_finished_repeating()
 			other_line = $0
 			other_line_times = 1
-			printf( "%s\n", $0 )
+			printf( "%s\n", original_line )
 		}
 	}
 
