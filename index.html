@@ -1,25 +1,42 @@
-<!DOCTYPE html>
-<html lang="en-us">
-  <head>
-    <meta charset="UTF-8">
-    <title>prettyping by denilsonsa</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
-    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
-  </head>
-  <body>
-    <section class="page-header">
-      <h1 class="project-name">prettyping</h1>
-      <h2 class="project-tagline">prettyping is a wrapper around the standard ping tool with the objective of making the output prettier, more colorful, more compact, and easier to read.</h2>
-      <a href="https://github.com/denilsonsa/prettyping" class="btn">View on GitHub</a>
-      <a href="https://github.com/denilsonsa/prettyping/zipball/master" class="btn">Download .zip</a>
-      <a href="https://github.com/denilsonsa/prettyping/tarball/master" class="btn">Download .tar.gz</a>
-    </section>
+<!doctype html>
+<!-- The Time Machine GitHub pages theme was designed and developed by Jon Rohan, on Feb 7, 2012. -->
+<!-- Follow him for fun. http://twitter.com/jonrohan. Tail his code on https://github.com/jonrohan -->
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
-    <section class="main-content">
-      <p>Do you run <code>ping</code> tool very often? Do you find yourself squeezing your eyes to see if a packet has been lost? Do you want to have a better view of the latency and of the lost packets over time?</p>
+  <link rel="stylesheet" href="stylesheets/stylesheet.css" media="screen">
+  <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+  <script type="text/javascript" src="javascripts/script.js"></script>
+
+  <title>prettyping</title>
+  <meta name="description" content="prettyping is a wrapper around the standard ping tool with the objective of making the output prettier, more colorful, more compact, and easier to read.">
+
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+</head>
+
+<body>
+
+  <div class="wrapper">
+    <header>
+      <h1 class="title">prettyping</h1>
+    </header>
+    <div id="container">
+      <p class="tagline">prettyping is a wrapper around the standard ping tool with the objective of making the output prettier, more colorful, more compact, and easier to read.</p>
+      <div id="main" role="main">
+        <div class="download-bar">
+        <div class="inner">
+          <a href="https://github.com/denilsonsa/prettyping/tarball/master" class="download-button tar"><span>Download</span></a>
+          <a href="https://github.com/denilsonsa/prettyping/zipball/master" class="download-button zip"><span>Download</span></a>
+          <a href="https://github.com/denilsonsa/prettyping" class="code">View prettyping on GitHub</a>
+        </div>
+        <span class="blc"></span><span class="trc"></span>
+        </div>
+        <article class="markdown-body">
+          <p>Do you run <code>ping</code> tool very often? Do you find yourself squeezing your eyes to see if a packet has been lost? Do you want to have a better view of the latency and of the lost packets over time?</p>
 
 <p>Then <code>prettyping</code> is the tool for you!</p>
 
@@ -56,14 +73,25 @@ chmod +x prettyping
 <p>In October 2013, I discovered the <a href="https://github.com/holman/spark">spark shell script in github</a>, which made me want to implement a similar output in <code>prettyping</code>. After a few days, I had implemented many features I wanted to implement for a long time, in addition to the spark-like output. After finishing all these features and polishing them, I submitted this tool to <a href="https://www.reddit.com/r/linux/comments/1op98a/prettypingsh_a_better_ui_for_watching_ping/">reddit /r/linux</a> and to <a href="https://www.reddit.com/r/commandline/comments/1oq5nz/prettypingsh_a_better_ui_for_watching_ping/">/r/commandline</a> and received a lot of positive feedback.</p>
 
 <p>Now, this tool has its own repository, works on multiple <code>awk</code> implementations, works on Mac OS X (in addition to Linux), and even has packages for some Linux distros and for Mac OS X brew.</p>
+        </article>
+      </div>
+    </div>
+    <footer>
+      <div class="owner">
+      <p><a href="https://github.com/denilsonsa" class="avatar"><img src="https://avatars2.githubusercontent.com/u/121676?v=3&amp;s=60" width="48" height="48"></a> <a href="https://github.com/denilsonsa">denilsonsa</a> maintains <a href="https://github.com/denilsonsa/prettyping">prettyping</a></p>
 
-      <footer class="site-footer">
-        <span class="site-footer-owner"><a href="https://github.com/denilsonsa/prettyping">prettyping</a> is maintained by <a href="https://github.com/denilsonsa">denilsonsa</a>.</span>
 
-        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
-      </footer>
-
-    </section>
+      </div>
+      <div class="creds">
+        <small>This page generated using <a href="https://pages.github.com/">GitHub Pages</a><br>theme by <a href="https://twitter.com/jonrohan/">Jon Rohan</a></small>
+      </div>
+    </footer>
+  </div>
+  <div class="current-section">
+    <a href="#top">Scroll to top</a>
+    <a href="https://github.com/denilsonsa/prettyping/tarball/master" class="tar">tar</a><a href="https://github.com/denilsonsa/prettyping/zipball/master" class="zip">zip</a><a href="" class="code">source code</a>
+    <p class="name"></p>
+  </div>
 
             <script type="text/javascript">
             var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
@@ -76,6 +104,5 @@ chmod +x prettyping
             } catch(err) {}
           </script>
 
-  </body>
+</body>
 </html>
-
