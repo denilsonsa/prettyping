@@ -1,0 +1,33 @@
+# vi:et:sw=2:ts=2
+# Remember: do not use tabs in configuration files.
+# See also: http://jekyllrb.com/docs/configuration/
+
+encoding: utf-8
+
+asset_path_prefix: ""
+
+project_title: "prettyping"
+project_tagline: "prettyping is a wrapper around the standard ping tool with the objective of making the output prettier, more colorful, more compact, and easier to read."
+github_url: https://github.com/denilsonsa/prettyping
+owner_url: https://github.com/denilsonsa
+owner_gravatar_url: https://avatars2.githubusercontent.com/u/121676?v=3&s=60
+owner_name: denilsonsa
+
+markdown: redcarpet
+#markdown: kramdown
+
+redcarpet:
+  extensions:
+    - no_intra_emphasis
+    - fenced_code_blocks
+    - autolink
+    - strikethrough
+    - tables
+    - smart
+    - with_toc_data
+#    - superscript
+
+kramdown:
+  input: GFM
+
+lsi: false

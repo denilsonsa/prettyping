@@ -562,51 +562,6 @@ p.tagline {
   filter:alpha(opacity=100);  /* IE 5-7 */
 }
 
-.current-section {
-  position: fixed;
-  top: 0;
-  left: 50%;
-  width: 693px;
-  margin-left: -352px;
-  background: #222;
-  border: 5px solid #444;
-  color: #fff;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity ease-in-out 0.3s;
-  -webkit-transition: opacity ease-in-out 0.3s;  /* Safari <=6.1, Android <= 4.3 */
-}
-
-.current-section p {
-  padding: 5px 27px;
-  font-size: 24px;
-  font-weight: bold;
-}
-
-.current-section a {
-  float: right;
-  text-indent: -10000px;
-  background: transparent url(../images/top.png) no-repeat 0 0;
-  width: 20px;
-  height: 20px;
-  opacity: 0.8;
-  margin-right: 12px;
-  margin-top: 12px;
-  opacity: 0.8;
-  filter:alpha(opacity=80);  /* IE 5-7 */
-  transition: opacity ease-in-out 0.3s;
-  -webkit-transition: opacity ease-in-out 0.3s;  /* Safari <=6.1, Android <= 4.3 */
-}
-
-.current-section a:hover {
-  opacity: 1;
-  filter:alpha(opacity=100);  /* IE 5-7 */
-}
-
-.current-section a.zip {
-  margin-right: 8px;
-}
-
 a.zip,
 a.zip span {
   background: transparent url(../images/zip.png) no-repeat 0 0;
@@ -681,7 +636,7 @@ a.download-button span {
 }
 
 footer {
-  margin-bottom: 60px;
+  /* margin-bottom: 60px; */
   padding-bottom: 60px;
 }
 
@@ -756,6 +711,8 @@ footer .owner p a {
 .markdown-body h2 {
   font-size: 24px;
   color: #557398;
+  margin-top: 3em;
+  margin-bottom: 1.5em;
 }
 
 .markdown-body h3 {
@@ -771,7 +728,7 @@ footer .owner p a {
 }
 
 .markdown-body pre {
-  padding: 10px 70px 10px 0;
+  padding: 10px;  /* was: 10px 70px 10px 0 */
   margin-left: -20px;
   margin-right: -20px;
   font-family: 'Monaco', 'Lucida Console', monospace;
@@ -837,6 +794,7 @@ footer .owner p a {
   margin-right: -20px;
 }
 
+.markdown-body thead,
 .markdown-body tbody {
   border-top: 2px solid #557398;
   border-bottom: 2px solid #557398;
@@ -847,6 +805,7 @@ footer .owner p a {
   margin: 0;
 }
 
+.markdown-body th,
 .markdown-body td {
   border-right: 1px solid #557398;
   border-bottom: 1px solid #557398;
@@ -855,14 +814,18 @@ footer .owner p a {
 
 .markdown-body td:first-child,
 .markdown-body th:first-child {
-  width: 30%;
-  padding-left: 20px;
+  width: 25%; /* was 30% */
+  /* padding-left: 20px; */
 }
 
+.markdown-body th:last-child,
 .markdown-body td:last-child {
   border-right: 0 none;
 }
 
+.markdown-body td {
+  font-size: 13px;  /* Just because I have a lot of text and a lot of columns. */
+}
 .markdown-body th {
   font-size: 18px;
   font-weight: bold;
@@ -870,10 +833,24 @@ footer .owner p a {
   padding: 5px;
 }
 
+.markdown-body code,
 .markdown-body tt {
+  /*
   background-color:#3b3b3b;
   color: #d6d6d6;
+  */
+  color: black;
+  background-color: #d6d6d6;
+  font-family: monospace, monospace;
+  font-size: 0.8em;
   padding: 2px 3px;
+}
+
+.markdown-body pre code {
+  color: inherit;
+  background-color: transparent;
+  font: inherit;
+  padding: 0;
 }
 
 .markdown-body blockquote {
