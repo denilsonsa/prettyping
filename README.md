@@ -9,6 +9,9 @@ colors and Unicode characters).
 different systems (Linux, Mac OS X, BSD…), as well as running on different
 versions of `awk` (`gawk`, `mawk`, `nawk`, `busybox awk`).
 
+Read about the history of this project, as well as detailed information,
+screenshots, videos at <http://denilsonsa.github.io/prettyping>.
+
 Requirements
 ============
 
@@ -35,4 +38,3 @@ directory is appropriate. No other file is necessary.
 
 [oping]: http://verplant.org/liboping/
 [prettyping]: https://raw.githubusercontent.com/denilsonsa/prettyping/master/prettyping
-[webpage]: http://denilsonsa.github.io/prettyping/index.html
