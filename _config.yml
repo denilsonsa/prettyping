@@ -9,6 +9,8 @@ asset_path_prefix: ""
 project_title: "prettyping"
 project_tagline: "prettyping is a wrapper around the standard ping tool with the objective of making the output prettier, more colorful, more compact, and easier to read."
 github_url: https://github.com/denilsonsa/prettyping
+tar_url: https://github.com/denilsonsa/prettyping/tarball/master
+zip_url: https://github.com/denilsonsa/prettyping/zipball/master
 owner_url: https://github.com/denilsonsa
 owner_gravatar_url: https://avatars2.githubusercontent.com/u/121676?v=3&s=60
 owner_name: denilsonsa

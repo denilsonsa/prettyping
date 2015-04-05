@@ -19,13 +19,31 @@ chmod +x prettyping
 
 Check out the [prettyping repository on GitHub][prettyping].
 
+## Features
+
+* Detects missing/lost packets and marks them at the output.
+* Shows live statistics, updated after each response is received.
+* Two sets of statistics are calculated: one for the most recent 60 responses, and another for all responses since the start of the script.
+* Correctly handles "unknown" lines, such as error messages, without messing up the output.
+* Detects repeated messages and avoids printing them repeatedly.
+* Fast startup, very few and lightweight dependencies.
+* No installation required, just run the script from anywhere (and make sure you have the 3 dependencies, most Linux distros already have them).
+* Sane defaults, auto-detects terminal width, auto-detects if the output is a terminal. Basically, just run the script and don't worry about the options until you need to.
+* Options not recognized by prettyping are passed to the ping tool. As a wrapper, you can use the most common ping parameters in prettyping as well.
+* As a wrapper, it can run as normal user. Root access is NOT required.
+* The output can be redirected to a file (using shell redirection or pipeline). In such mode, prettyping will avoid using cursor-control escape codes.
+* Colorful output (can be disabled by command-line option).
+* Graphical output of the latency using unicode characters (can be disabled by command-line option).
+* Intuitive, easy-to-read output.
+* It looks pretty!
+
 ## What does it look like?
 
 Animated GIF (sped up to 4×) showing what `prettyping` can do:<br>
 ![Animated GIF (4× the actual speed)](prettyping-4x.gif)
 
 [YouTube demonstration by Yu-Jie Lin](https://youtu.be/ziEMY1BcikM):<br>
-<iframe width="560" height="315" src="https://www.youtube.com/embed/ziEMY1BcikM" frameborder="0" allowfullscreen></iframe>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/ziEMY1BcikM?autohide=1" frameborder="0" allowfullscreen></iframe>
 
 ## Comparison between tools
 
@@ -42,6 +60,16 @@ Animated GIF (sped up to 4×) showing what `prettyping` can do:<br>
 | Redirecting output to file | Yes | No | `oping`: Yes<br>`noping`: No | Yes |
 | Terminal behavior | Standard output | Curses full-screen app | `oping`: Standard output<br>`noping`: Curses full-screen app | Standard output with optional colors and VT100 escapes |
 | Terminal dimensions | Ignores the terminal size | Reacts immediately to the terminal size | `oping`: Ignores the terminal size<br>`noping`: Adapts to the terminal size | Adapts to the terminal size (only the future responses, the past responses are not changed) |
+
+## FAQ and troubleshooting
+
+**I don't see the block characters, all I see are weird characters such as "â..".**
+
+Your terminal does not seem to support UTF-8. Configure your terminal correctly, switch to another terminal, or just use the `--nounicode` option. Also, [do not copy-paste the code from the browser](http://www.reddit.com/r/linux/comments/1op98a/prettypingsh_a_better_ui_for_watching_ping/ccuefny), download it instead.
+
+**What if I am using [PuTTY][]?**
+
+Inside *Window → Translation*, set the remote character set to *UTF-8* (as in [this screenshot](http://i.imgur.com/Q7LI5MW.png) by [battery_go user on reddit](http://www.reddit.com/r/linux/comments/1op98a/prettypingsh_a_better_ui_for_watching_ping/ccueh06])).
 
 ## A bit of history
 
@@ -67,6 +95,7 @@ On April 2015, this tool got [its own repository on GitHub][prettyping] (it was 
 [mtr]: http://www.bitwizard.nl/mtr/
 [oping]: http://noping.cc/
 [prettyping]: https://github.com/denilsonsa/prettyping
+[PuTTY]: http://www.chiark.greenend.org.uk/~sgtatham/putty/
 [reddit1]: https://www.reddit.com/r/linux/comments/1op98a/prettypingsh_a_better_ui_for_watching_ping/
 [reddit2]: https://www.reddit.com/r/commandline/comments/1oq5nz/prettypingsh_a_better_ui_for_watching_ping/
 [small_scripts]: http://bitbucket.org/denilsonsa/small_scripts/
