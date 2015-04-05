@@ -37,4 +37,4 @@ X), just install the `prettyping` script into `/usr/bin/`, or whatever
 directory is appropriate. No other file is necessary.
 
 [oping]: http://verplant.org/liboping/
-[prettyping]: https://raw.githubusercontent.com/denilsonsa/prettyping/master/prettyping
+[prettyping]: https://github.com/denilsonsa/prettyping/raw/master/prettyping
