@@ -10,7 +10,7 @@ different systems (Linux, Mac OS X, BSD…), as well as running on different
 versions of `awk` (`gawk`, `mawk`, `nawk`, `busybox awk`).
 
 Read about the history of this project, as well as detailed information,
-screenshots, videos at <http://denilsonsa.github.io/prettyping>.
+screenshots, videos at: <http://denilsonsa.github.io/prettyping>
 
 Requirements
 ============
