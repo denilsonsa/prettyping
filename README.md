@@ -1,3 +1,5 @@
+[![Flattr this project](https://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=denilsonsa&url=https%3A%2F%2Fgithub.com%2Fdenilsonsa%2Fprettyping&title=prettyping&description=prettyping+is+a+wrapper+around+the+standard+ping+tool+with+the+objective+of+making+the+output+prettier,+more+colorful,+more+compact,+and+easier+to+read.&tags=github&category=software)
+
 `prettyping` is a wrapper around the standard `ping` tool with the objective of
 making the output prettier, more colorful, more compact, and easier to read.
 
