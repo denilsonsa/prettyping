@@ -240,10 +240,6 @@ function ceil(x) {
 	return (x == int(x)) ? x : int(x) + 1
 }
 
-# Currently, this function is called once, at the beginning of this
-# script, but it is also possible to call this more than once, to
-# handle window size changes while this program is running.
-#
 # Local variables MUST be declared in argument list, else they are
 # seen as global. Ugly, but that is how awk works.
 function get_terminal_size(SIZE, SIZEA, HAS_DETECTED, CMD) {
