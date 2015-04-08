@@ -250,7 +250,7 @@ function get_terminal_size(SIZE, SIZEA, HAS_DETECTED, CMD) {
 
 	CMD = "stty -f /dev/tty size 2> /dev/null"
 
-	if( (CMD | getline SIZE) == 1 ) {
+	if ( (CMD | getline SIZE) == 1 ) {
 		split(SIZE, SIZEA, " ")
 		LINES   = int(SIZEA[1])
 		COLUMNS = int(SIZEA[2])
@@ -258,16 +258,16 @@ function get_terminal_size(SIZE, SIZEA, HAS_DETECTED, CMD) {
 	}
 	close(CMD)
 
-	if( HAS_DETECTED == 0 ) {
+	if ( HAS_DETECTED == 0 ) {
 		CMD = "tput lines"
-		if( (CMD | getline SIZE) == 1 ) {
+		if ( (CMD | getline SIZE) == 1 ) {
 			LINES = int(SIZE)
 			HAS_DETECTED = 1
 		}
 		close(CMD)
 
 		CMD = "tput cols"
-		if( (CMD | getline SIZE) == 1 ) {
+		if ( (CMD | getline SIZE) == 1 ) {
 			COLUMNS = int(SIZE)
 			HAS_DETECTED = 1
 		}
@@ -286,8 +286,8 @@ function get_terminal_size(SIZE, SIZEA, HAS_DETECTED, CMD) {
 # It will move the cursor to the line next to the statistics and
 # restore the default color.
 function other_line_is_printed() {
-	if( IS_PRINTING_DOTS ) {
-		if( '"${IS_TERMINAL}"' ) {
+	if ( IS_PRINTING_DOTS ) {
+		if ( '"${IS_TERMINAL}"' ) {
 			printf( ESC_DEFAULT ESC_NEXTLINE ESC_NEXTLINE "\n" )
 		} else {
 			printf( ESC_DEFAULT "\n" )
@@ -300,22 +300,22 @@ function other_line_is_printed() {
 
 # Function called whenever a non-dotted line is repeated.
 function other_line_is_repeated() {
-	if (other_line_times < 2) {
+	if ( other_line_times < 2 ) {
 		return
 	}
-	if( '"${IS_TERMINAL}"' ) {
+	if ( '"${IS_TERMINAL}"' ) {
 		printf( ESC_DEFAULT ESC_ERASELINE "\r" )
 	}
 	printf( "Last message repeated %d times.", other_line_times )
-	if( ! '"${IS_TERMINAL}"' ) {
+	if ( ! '"${IS_TERMINAL}"' ) {
 		printf( "\n" )
 	}
 }
 
 # Function called whenever the repeating line has changed.
 function other_line_finished_repeating() {
-	if( other_line_times >= 2 ) {
-		if( '"${IS_TERMINAL}"' ) {
+	if ( other_line_times >= 2 ) {
+		if ( '"${IS_TERMINAL}"' ) {
 			printf( "\n" )
 		} else {
 			other_line_is_repeated()
@@ -332,20 +332,20 @@ function other_line_finished_repeating() {
 #
 # If the output is not a terminal, break lines on every LAST_N dots.
 function print_newlines_if_needed() {
-	if( '"${IS_TERMINAL}"' ) {
+	if ( '"${IS_TERMINAL}"' ) {
 		# COLUMNS-1 because I want to avoid bugs with the cursor at the last column
-		if( CURR_COL >= COLUMNS-1 ) {
+		if ( CURR_COL >= COLUMNS-1 ) {
 			CURR_COL = 0
 		}
-		if( CURR_COL == 0 ) {
-			if( IS_PRINTING_DOTS ) {
+		if ( CURR_COL == 0 ) {
+			if ( IS_PRINTING_DOTS ) {
 				printf( "\n" )
 			}
 			#printf( "\n" "\n" ESC_PREVLINE ESC_PREVLINE ESC_ERASELINE )
 			printf( ESC_DEFAULT "\n" "\n" ESC_CURSORUP ESC_CURSORUP ESC_ERASELINE )
 		}
 	} else {
-		if( CURR_COL >= LAST_N ) {
+		if ( CURR_COL >= LAST_N ) {
 			CURR_COL = 0
 			printf( ESC_DEFAULT "\n" )
 			print_statistics_bar()
@@ -369,8 +369,8 @@ function clear(d) {
 function store(d, value) {
 	d[d["index"]] = value
 	d["index"]++
-	if( d["index"] >= d["size"] ) {
-		if( d["size"] < LAST_N ) {
+	if ( d["index"] >= d["size"] ) {
+		if ( d["size"] < LAST_N ) {
 			d["size"]++
 		} else {
 			d["index"] = 0
@@ -385,11 +385,11 @@ function process_rtt(rtt) {
 	# Overall statistics
 	last_rtt = rtt
 	total_rtt += rtt
-	if( last_seq == 0 ) {
+	if ( last_seq == 0 ) {
 		min_rtt = max_rtt = rtt
 	} else {
-		if( rtt < min_rtt ) min_rtt = rtt
-		if( rtt > max_rtt ) max_rtt = rtt
+		if ( rtt < min_rtt ) min_rtt = rtt
+		if ( rtt > max_rtt ) max_rtt = rtt
 	}
 
 	# "Last N" statistics
@@ -410,10 +410,10 @@ function lost_a_packet() {
 
 # block_index, n, w, oddeven are just local variables.
 function print_response_legend(i, n, w, oddeven) {
-	if( ! '"${USE_LEGEND}"' ) {
+	if ( ! '"${USE_LEGEND}"' ) {
 		return
 	}
-	if( BLOCK_LEN > 1 ) {
+	if ( BLOCK_LEN > 1 ) {
 		# w counts the cursor position in the current line. Because of the
 		# escape codes, I need to jump through some hoops in order to count the
 		# position correctly.
@@ -423,11 +423,11 @@ function print_response_legend(i, n, w, oddeven) {
 
 		printf( BLOCK[0] ESC_DEFAULT n )
 
-		for( i=1 ; i<BLOCK_LEN ; i++ ) {
+		for ( i=1 ; i<BLOCK_LEN ; i++ ) {
 			# Workaround for when there is a background color change right at
 			# the edge of the screen. When it happens, the entire next line
 			# will have that background color, which is not desired.
-			if( '"${IS_TERMINAL}"' && w == COLUMNS ) {
+			if ( '"${IS_TERMINAL}"' && w == COLUMNS ) {
 				printf( "\n" )
 				w = 0
 				oddeven = ! oddeven
@@ -440,7 +440,7 @@ function print_response_legend(i, n, w, oddeven) {
 			w += 1 + length(n)
 
 			# Avoid breaking the legend at the end of the line.
-			if( '"${IS_TERMINAL}"' && w > COLUMNS ) {
+			if ( '"${IS_TERMINAL}"' && w > COLUMNS ) {
 				printf( "\n" )
 				w = 1 + length(n)
 				oddeven = ! oddeven
@@ -456,7 +456,7 @@ function print_response_legend(i, n, w, oddeven) {
 	}
 
 	# Useful code for debugging.
-	#for( i=0 ; i<=BLOCK_RTT_MAX ; i++ ) {
+	#for ( i=0 ; i<=BLOCK_RTT_MAX ; i++ ) {
 	#	print_received_response(i)
 	#	printf( ESC_DEFAULT "%4d\n", i )
 	#}
@@ -464,9 +464,9 @@ function print_response_legend(i, n, w, oddeven) {
 
 # block_index is just a local variable.
 function print_received_response(rtt, block_index) {
-	if( rtt < BLOCK_RTT_MIN ) {
+	if ( rtt < BLOCK_RTT_MIN ) {
 		block_index = 0
-	} else if( rtt >= BLOCK_RTT_MAX ) {
+	} else if ( rtt >= BLOCK_RTT_MAX ) {
 		block_index = BLOCK_LEN - 1
 	} else {
 		block_index = 1 + int((rtt - BLOCK_RTT_MIN) * (BLOCK_LEN - 2) / BLOCK_RTT_RANGE)
@@ -493,7 +493,7 @@ function print_overall(percentage_lost, avg_rtt) {
 	avg_rtt = ( received > 0 ) ? (total_rtt/received) : 0
 	percentage_lost = ( lost+received > 0 ) ? (lost*100/(lost+received)) : 0
 
-	if( '"${IS_TERMINAL}"' ) {
+	if ( '"${IS_TERMINAL}"' ) {
 		printf( "%2d/%3d (%2d%%) lost; %4.0f/" ESC_BOLD "%4.0f" ESC_DEFAULT "/%4.0fms; last: " ESC_BOLD "%4.0f" ESC_DEFAULT "ms",
 			lost,
 			lost+received,
@@ -517,7 +517,7 @@ function print_overall(percentage_lost, avg_rtt) {
 function print_last_n(i, percentage_lost, sum, min, avg, max, diffs) {
 	# Calculate and print the lost packets statistics
 	sum = 0
-	for( i=0 ; i<lastn_lost["size"] ; i++ ) {
+	for ( i=0 ; i<lastn_lost["size"] ; i++ ) {
 		sum += lastn_lost[i]
 	}
 	percentage_lost = (lastn_lost["size"] > 0) ? (sum*100/lastn_lost["size"]) : 0
@@ -529,18 +529,18 @@ function print_last_n(i, percentage_lost, sum, min, avg, max, diffs) {
 	# Calculate the min/avg/max rtt times
 	sum = diffs = 0
 	min = max = lastn_rtt[0]
-	for( i=0 ; i<lastn_rtt["size"] ; i++ ) {
+	for ( i=0 ; i<lastn_rtt["size"] ; i++ ) {
 		sum += lastn_rtt[i]
-		if( lastn_rtt[i] < min ) min = lastn_rtt[i]
-		if( lastn_rtt[i] > max ) max = lastn_rtt[i]
+		if ( lastn_rtt[i] < min ) min = lastn_rtt[i]
+		if ( lastn_rtt[i] > max ) max = lastn_rtt[i]
 	}
 	avg = (lastn_rtt["size"]) ? (sum/lastn_rtt["size"]) : 0
 
 	# Calculate mdev (mean absolute deviation)
-	for( i=0 ; i<lastn_rtt["size"] ; i++ ) {
+	for ( i=0 ; i<lastn_rtt["size"] ; i++ ) {
 		diffs += abs(lastn_rtt[i] - avg)
 	}
-	if( lastn_rtt["size"] > 0 ) {
+	if ( lastn_rtt["size"] > 0 ) {
 		diffs /= lastn_rtt["size"]
 	}
 
@@ -554,7 +554,7 @@ function print_last_n(i, percentage_lost, sum, min, avg, max, diffs) {
 }
 
 function print_statistics_bar() {
-	if( '"${IS_TERMINAL}"' ) {
+	if ( '"${IS_TERMINAL}"' ) {
 		printf( ESC_SAVEPOS ESC_DEFAULT )
 
 		printf( ESC_NEXTLINE ESC_ERASELINE )
@@ -572,7 +572,7 @@ function print_statistics_bar() {
 }
 
 function print_statistics_bar_if_terminal() {
-	if( '"${IS_TERMINAL}"' ) {
+	if ( '"${IS_TERMINAL}"' ) {
 		print_statistics_bar()
 	}
 }
@@ -623,7 +623,7 @@ BEGIN {
 
 	# Auto-detecting the terminal size
 	get_terminal_size()
-	if( '"${IS_TERMINAL}"' && COLUMNS <= 50 ) {
+	if ( '"${IS_TERMINAL}"' && COLUMNS <= 50 ) {
 		print "Warning: terminal width is too small."
 	}
 
@@ -632,7 +632,7 @@ BEGIN {
 
 	# Color escape codes.
 	# Fortunately, awk defaults any unassigned variable to an empty string.
-	if( '"${USE_COLOR}"' ) {
+	if ( '"${USE_COLOR}"' ) {
 		ESC_DEFAULT = "\033[0m"
 		ESC_BOLD    = "\033[1m"
 		#ESC_BLACK   = "\033[0;30m"
@@ -671,7 +671,7 @@ BEGIN {
 
 	############################################################
 	# Unicode characters (based on https://github.com/holman/spark )
-	if( '"${USE_UNICODE}"' ) {
+	if ( '"${USE_UNICODE}"' ) {
 		BLOCK[ 0] = ESC_GREEN "▁"
 		BLOCK[ 1] = ESC_GREEN "▂"
 		BLOCK[ 2] = ESC_GREEN "▃"
@@ -696,7 +696,7 @@ BEGIN {
 		BLOCK[21] = ESC_RED_ON_YELLOW "▆"
 		BLOCK[22] = ESC_RED_ON_YELLOW "▇"
 		BLOCK[23] = ESC_RED_ON_YELLOW "█"
-		if( '"${USE_MULTICOLOR}"' && '"${USE_COLOR}"' ) {
+		if ( '"${USE_MULTICOLOR}"' && '"${USE_COLOR}"' ) {
 			# Multi-color version:
 			BLOCK_LEN = 24
 			BLOCK_RTT_MIN = 10
@@ -720,7 +720,7 @@ BEGIN {
 		BLOCK[ 9] = ESC_RED "."
 		BLOCK[10] = ESC_RED "o"
 		BLOCK[11] = ESC_RED "O"
-		if( '"${USE_MULTICOLOR}"' && '"${USE_COLOR}"' ) {
+		if ( '"${USE_MULTICOLOR}"' && '"${USE_COLOR}"' ) {
 			# Multi-color version:
 			BLOCK_LEN = 12
 			BLOCK_RTT_MIN = 20
@@ -733,13 +733,13 @@ BEGIN {
 		}
 	}
 
-	if( int('"${RTT_MIN}"') > 0 && int('"${RTT_MAX}"') > 0 ) {
+	if ( int('"${RTT_MIN}"') > 0 && int('"${RTT_MAX}"') > 0 ) {
 		BLOCK_RTT_MIN = int('"${RTT_MIN}"')
 		BLOCK_RTT_MAX = int('"${RTT_MAX}"')
-	} else if( int('"${RTT_MIN}"') > 0 ) {
+	} else if ( int('"${RTT_MIN}"') > 0 ) {
 		BLOCK_RTT_MIN = int('"${RTT_MIN}"')
 		BLOCK_RTT_MAX = BLOCK_RTT_MIN * (BLOCK_LEN - 1)
-	} else if( int('"${RTT_MAX}"') > 0 ) {
+	} else if ( int('"${RTT_MAX}"') > 0 ) {
 		BLOCK_RTT_MAX = int('"${RTT_MAX}"')
 		BLOCK_RTT_MIN = int(BLOCK_RTT_MAX / (BLOCK_LEN - 1))
 	}
@@ -751,10 +751,10 @@ BEGIN {
 ############################################################
 # Main loop
 {
-	# Sample line:
-	# 64 bytes from 8.8.8.8: icmp_seq=1 ttl=49 time=184 ms
-	if( $0 ~ /^[0-9]+ bytes from .*: icmp_[rs]eq=[0-9]+ ttl=[0-9]+ time=[0-9.]+ *ms/ ) {
-		if( other_line_times >= 2 ) {
+	if ( $0 ~ /^[0-9]+ bytes from .*: icmp_[rs]eq=[0-9]+ ttl=[0-9]+ time=[0-9.]+ *ms/ ) {
+		# Sample line from ping:
+		# 64 bytes from 8.8.8.8: icmp_seq=1 ttl=49 time=184 ms
+		if ( other_line_times >= 2 ) {
 			other_line_finished_repeating()
 		}
 
@@ -787,10 +787,12 @@ BEGIN {
 		print_statistics_bar_if_terminal()
 	} else if ( $0 == "" ) {
 		# Do nothing on blank lines.
-	} else if( $0 ~ /^Request timeout for icmp_seq [0-9]+/ ) {
+	} else if ( $0 == "error shutting down ssl" ) {
+		# Common error message when using httping, ignore it.
+	} else if ( $0 ~ /^Request timeout for icmp_seq [0-9]+/ ) {
 		# Reply timeout is printed on Mac OS X.
 
-		if( other_line_times >= 2 ) {
+		if ( other_line_times >= 2 ) {
 			other_line_finished_repeating()
 		}
 
@@ -803,11 +805,11 @@ BEGIN {
 
 		print_newlines_if_needed()
 		print_statistics_bar_if_terminal()
-	} else if( $0 ~ /^SIGWINCH$/ ) {
+	} else if ( $0 ~ /^SIGWINCH$/ ) {
 		get_terminal_size()
 
-		if( IS_PRINTING_DOTS ) {
-			if( CURR_COL >= COLUMNS-1 ) {
+		if ( IS_PRINTING_DOTS ) {
+			if ( CURR_COL >= COLUMNS-1 ) {
 				# Not enough space anyway.
 			} else {
 				# Making up room in case the number of lines has changed.
@@ -825,7 +827,7 @@ BEGIN {
 		gsub(/icmp_seq[= ][0-9]+/, "")
 		if ( $0 == other_line ) {
 			other_line_times++
-			if( '"${IS_TERMINAL}"' ) {
+			if ( '"${IS_TERMINAL}"' ) {
 				other_line_is_repeated()
 			}
 		} else {
