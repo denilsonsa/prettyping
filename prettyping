@@ -14,6 +14,8 @@
 # http://www.reddit.com/r/linux/comments/1op98a/prettypingsh_a_better_ui_for_watching_ping/
 # Third-party demonstration video: https://www.youtube.com/watch?v=ziEMY1BcikM
 
+# TODO: Adjust how many items in the legend are printed based on the terminal width.
+#
 # TODO: Detect the following kinds of message and avoid printing it repeatedly.
 # From 192.168.1.11: icmp_seq=4 Destination Host Unreachable
 # Request timeout for icmp_seq 378
@@ -769,7 +771,40 @@ BEGIN {
 
 		seq = int($2)
 
-		while( last_seq < seq - 1 ) {
+		while ( last_seq < seq - 1 ) {
+			lost_a_packet()
+		}
+
+		# Received a packet
+		print_newlines_if_needed()
+		print_received_response(rtt)
+
+		# In case of receiving multiple responses with the same seq number, it
+		# is better to use "last_seq = seq" than to increment last_seq.
+		last_seq = seq
+
+		received++
+		store(lastn_lost, 0)
+
+		print_statistics_bar_if_terminal()
+	} else if ( $0 ~ /^.*onnected to.*, seq=[0-9]+ time=[0-9.]+ *ms/ ) {
+		# Sample line from httping:
+		# connected to 200.149.119.168:80 (273 bytes), seq=0 time=129.86 ms 
+		if ( other_line_times >= 2 ) {
+			other_line_finished_repeating()
+		}
+
+		seq = $0
+		sub(/.* seq=/, "", seq)
+		seq = int(seq)
+
+		rtt = $0
+		sub(/.* time=/, "", rtt)
+		rtt = int(rtt)
+
+		process_rtt(rtt)
+
+		while ( last_seq < seq - 1 ) {
 			lost_a_packet()
 		}
 
