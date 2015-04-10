@@ -943,6 +943,19 @@ footer .owner p a {
 .highlight .il { color: #009999 } /* Literal.Number.Integer.Long */
 
 
+a.release-badge {
+  display: inline-block;
+  text-indent: 0!important;
+  width: auto;
+  float: right;
+  height: auto;
+  margin-left: 10px;
+}
+a.release-badge img {
+  height: 20px;
+  padding: 6px 0;
+  vertical-align: middle;
+}
 .donation_buttons {
   display: flex;
   flex-direction: row;
