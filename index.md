@@ -39,11 +39,17 @@ Check out the [prettyping repository on GitHub][prettyping].
 
 ## What does it look like?
 
+Screenshot:<br>
+![Screenshot of prettyping showing the latency of ping responses, as well as some lost packets](prettyping_1.png)
+
 Animated GIF (sped up to 4×) showing what `prettyping` can do:<br>
 ![Animated GIF (4× the actual speed)](prettyping-4x.gif)
 
 [YouTube demonstration by Yu-Jie Lin](https://youtu.be/ziEMY1BcikM):<br>
 <iframe width="560" height="315" src="https://www.youtube.com/embed/ziEMY1BcikM?autohide=1" frameborder="0" allowfullscreen></iframe>
+
+Very old screenshot, showing how `prettyping` looked like during in 2008:<br>
+![Old screenshot of prettyping showing only the received and lost packets, but not the latency](prettyping_old.png)
 
 ## Comparison between tools
 
