@@ -263,6 +263,11 @@ trap '' 2
 		echo -E "$line"
 	done
 ) 2>&1 | "${AWK_BIN}" "${AWK_PARAMS[@]}" '
+# Local variables MUST be declared in argument list, else they are
+# seen as global. Ugly, but that is how awk works. By convention, as described
+# in the mawk man page, there is extra space before declaring the local
+# variables.
+
 # Weird that awk does not come with abs(), so I need to implement it.
 function abs(x) {
 	return ( (x < 0) ? -x : x )
@@ -273,9 +278,9 @@ function ceil(x) {
 	return (x == int(x)) ? x : int(x) + 1
 }
 
-# Local variables MUST be declared in argument list, else they are
-# seen as global. Ugly, but that is how awk works.
-function get_terminal_size(SIZE, SIZEA, HAS_DETECTED, CMD) {
+# Receives no parameters.
+# Updates the COLUMNS and LINES global variables.
+function get_terminal_size(   SIZE, SIZEA, HAS_DETECTED, CMD) {
 	HAS_DETECTED = 0
 
 	CMD = "stty -f /dev/tty size 2> /dev/null"
@@ -438,8 +443,7 @@ function lost_a_packet() {
 ############################################################
 # Functions related to printing the fancy ping response
 
-# block_index, n, w, oddeven are just local variables.
-function print_response_legend(i, n, w, oddeven) {
+function print_response_legend(i,    n, w, oddeven) {
 	if ( ! '"${USE_LEGEND}"' ) {
 		return
 	}
@@ -492,8 +496,7 @@ function print_response_legend(i, n, w, oddeven) {
 	#}
 }
 
-# block_index is just a local variable.
-function print_received_response(rtt, block_index) {
+function print_received_response(rtt,    block_index) {
 	if ( rtt < BLOCK_RTT_MIN ) {
 		block_index = 0
 	} else if ( rtt >= BLOCK_RTT_MAX ) {
@@ -513,8 +516,7 @@ function print_missing_response(rtt) {
 ############################################################
 # Functions related to printing statistics
 
-# All arguments are just local variables.
-function print_overall(percentage_lost, avg_rtt) {
+function print_overall(   percentage_lost, avg_rtt) {
 	# Handling division by zero.
 	# Note that mawk does not consider division by zero an error, while all
 	# other awk implementations abort in such case.
@@ -543,8 +545,7 @@ function print_overall(percentage_lost, avg_rtt) {
 	}
 }
 
-# All arguments are just local variables.
-function print_last_n(i, percentage_lost, sum, min, avg, max, diffs) {
+function print_last_n(   i, percentage_lost, sum, min, avg, max, diffs) {
 	# Calculate and print the lost packets statistics
 	sum = 0
 	for ( i=0 ; i<lastn_lost["size"] ; i++ ) {
