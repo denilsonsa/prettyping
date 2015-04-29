@@ -217,51 +217,25 @@ parse_arguments "$@"
 
 export LC_ALL=C
 
-# Warning! Ugly code ahead!
-# The code is so ugly that the comments explaining it are
-# bigger than the code itself!
-#
-# Suppose this:
-#
-#   cmd_a | cmd_b &
-#
-# I need the PID of cmd_a. How can I get it?
-# In bash, $! will give me the PID of cmd_b.
-#
-# So, I came up with this ugly solution: open a subshell, like this:
-#
-# (
-# 	cmd_a &
-# 	echo "This is the PID I want $!"
-# 	wait
-# ) | cmd_b
-
 
 # Ignore Ctrl+C here.
 # If I don't do this, this shell script is killed before
 # ping and gawk can finish their work.
 trap '' 2
 
-# Now the ugly code.
-(
-	"${PING_BIN}" "${PING_PARAMS[@]}" &
-	PING_PID="$!"
-
-	# Commented out, because the shell/terminal already sends SIGINT to all
-	# processes in the same foreground process group.
-	# http://www.vidarholen.net/contents/blog/?p=34
-	# https://unix.stackexchange.com/a/149756/
-	#trap "kill -2 $PING_PID ; exit 1" 2
-
-	wait
-) 2>&1 | (
+# Running the ping binary and the main prettyping code.
+"${PING_BIN}" "${PING_PARAMS[@]}" 2>&1 | (
 	if [ "${IS_TERMINAL}" = 1 ]; then
 		# Print a message to notify the awk script about terminal size change.
+		# This signal is handled in bash because awk does not support signal
+		# handling. (Well, some versions do, but that is not portable.)
 		trap "echo SIGWINCH" 28
 	fi
 
-	# The trap must be in another subshell because otherwise it will interrupt
-	# the "wait" commmand.
+	# This subshell outputs its stdin without any change.
+	# However, when receiving a SIGWINCH signal, it will introduce an extra
+	# line in the middle of the output. This line is then handled by the awk
+	# script.
 	while read line; do
 		echo -E "$line"
 	done
