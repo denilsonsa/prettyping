@@ -247,8 +247,11 @@ trap '' 2
 	"${PING_BIN}" "${PING_PARAMS[@]}" &
 	PING_PID="$!"
 
-	# Commented out, because it looks like this line is not needed
-	#trap "kill -2 $PING_PID ; exit 1" 2  # Catch Ctrl+C here
+	# Commented out, because the shell/terminal already sends SIGINT to all
+	# processes in the same foreground process group.
+	# http://www.vidarholen.net/contents/blog/?p=34
+	# https://unix.stackexchange.com/a/149756/
+	#trap "kill -2 $PING_PID ; exit 1" 2
 
 	wait
 ) 2>&1 | (

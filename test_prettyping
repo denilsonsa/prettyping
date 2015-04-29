@@ -1,0 +1,181 @@
+#!/usr/bin/env python3
+
+import argparse
+import os
+import os.path
+import signal
+import subprocess
+import sys
+import textwrap
+import time
+
+
+SLEEP_SECONDS = 1
+
+
+def hr(text, char='-✂-', qty=10, color_set='\033[0;36m', color_reset='\033[0m'):
+    '''Returns a string padded with <char> repeated <qty> times.
+
+    Also adds TTY color escapes to the string.
+    '''
+    return '{pad} {color_set}{text}{color_reset} {pad}'.format(
+        text=text, pad=(char * qty), color_set=color_set, color_reset=color_reset)
+
+
+class TestDef():
+    '''The definition of a test.'''
+
+    def __init__(self, name, description, ping_output):
+        self.name = name
+        self.description = description
+        self.ping_output = ping_output.strip().splitlines()
+
+    def emulate_ping(self):
+        i = iter(self.ping_output)
+        try:
+            for line in i:
+                # The first character indicates the action.
+                if line[0] == '.':
+                    # Short, common pause.
+                    time.sleep(SLEEP_SECONDS)
+                elif line[0] == '|' or line[0] == '!':
+                    # No pause.
+                    pass
+                else:
+                    raise NotImplementedError('Character "{0}" is not recognized'.format(line[0]))
+                sys.stdout.write(line[1:] + '\n')
+                sys.stdout.flush()
+        except KeyboardInterrupt:
+            # Skip to the trailing section.
+            trailing_found = False
+            for line in i:
+                if line[0] == '!':
+                    trailing_found = True
+                if trailing_found:
+                    sys.stdout.write(line[1:] + '\n')
+            sys.stdout.flush()
+            sys.exit()
+
+    def run(self):
+        print(hr('BEGIN'))
+        prettyping = None
+        try:
+            prettyping = subprocess.Popen(
+                ['./prettyping', '--pingbin', os.path.abspath(sys.argv[0]), '--interval', str(SLEEP_SECONDS), '--emulate_ping', self.name]
+            )
+            prettyping.wait()
+        except KeyboardInterrupt:
+            if prettyping:
+                prettyping.wait()
+        print(hr('END'))
+        # returncode = subprocess.call(
+        # with subprocess.Popen(
+        #     ['./prettyping', '--pingbin', sys.argv[0], '--emulate_ping', self.name],
+        #     bufsize=1,  # Line-buffered PIPE.
+        #     stdin=subprocess.PIPE,
+        #     universal_newlines=False,
+        # ) as prettyping:
+        #     pass
+
+
+# This starts as a list (in the source code), but is later (at runtime)
+# converted to a dict.
+TESTS = [
+    TestDef(
+        'Sample test',
+        'First test ever written in the new testing tool.',
+'''
+|PING registro.br (200.160.2.3) 56(84) bytes of data.
+.Request timeout for icmp_seq 1
+.64 bytes from registro.br (200.160.2.3): icmp_seq=2 ttl=56 time=25.5 ms
+.64 bytes from registro.br (200.160.2.3): icmp_seq=3 ttl=56 time=55.7 ms
+.64 bytes from registro.br (200.160.2.3): icmp_seq=4 ttl=56 time=75.2 ms
+!
+|--- registro.br ping statistics ---
+|3 packets transmitted, 3 received, 0% packet loss, time 2000ms
+|rtt min/avg/max/mdev = 36.750/38.535/40.048/1.360 ms
+''',
+    ),
+    TestDef(
+        'Abrupt end of output',
+        'prettyping should print the statistics and fix the cursor position.',
+'''
+|PING registro.br (200.160.2.3) 56(84) bytes of data.
+.64 bytes from registro.br (200.160.2.3): icmp_seq=1 ttl=56 time=25.5 ms
+.64 bytes from registro.br (200.160.2.3): icmp_seq=2 ttl=56 time=55.7 ms
+''',
+    ),
+]
+
+
+def parse_arguments():
+    parser = argparse.ArgumentParser(
+        description='prettyping testing tool',
+        epilog=textwrap.dedent('''
+        This tool serves two purposes:
+
+        * Act as a user-friendly front-end for running predefined prettyping tests.
+        * Emulate a mock ping implementation while running a predefined test.
+
+        There is no automated check for test results. The testing is essentially
+        visual, a human being looks at the behavior and checks if the prettyping
+        behavior makes sense.
+        '''),
+        formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    parser.add_argument(
+        '--emulate_ping',
+        metavar='TEST NAME',
+        action='store',
+        type=str,
+        nargs='?',
+        default=None,
+        help='The test name to be emulated.'
+    )
+    parser.add_argument(
+        '-i', '--interval',
+        metavar='SECONDS',
+        action='store',
+        type=float,
+        default=1,
+        help='The sleep() interval before each line is printed.'
+    )
+    args = parser.parse_args()
+    return args
+
+
+def convert_global_tests_list_to_dict():
+    global TESTS
+    d = {}
+    for i, t in enumerate(TESTS):
+        # Tests can be referenced by number (zero-based index) or by name.
+        d[t.name] = t
+        d[i] = t
+        d[str(i)] = t
+    TESTS = d
+
+
+def raise_keyboard_interrupt(*args):
+    raise KeyboardInterrupt()
+
+
+def main():
+    global SLEEP_SECONDS
+
+    options = parse_arguments()
+
+    SLEEP_SECONDS = options.interval
+    convert_global_tests_list_to_dict()
+
+    if options.emulate_ping:
+        # https://stackoverflow.com/questions/974189/how-to-send-a-sigint-to-python-from-a-bash-script
+        signal.signal(signal.SIGINT, raise_keyboard_interrupt)
+        TESTS[options.emulate_ping].emulate_ping()
+    else:
+        print('Normal run')
+        #TESTS['Sample test'].run()
+        TESTS[0].run()
+
+
+if __name__ == '__main__':
+	main()

@@ -2,6 +2,8 @@
 #
 # This is just a mock ping program that reproduces the same output all the
 # time. It is used for testing/developing prettyping.
+#
+# TODO: Delete this one after migrating to 'test_prettyping'.
 
 sample_output() {
 	cat << EOF
