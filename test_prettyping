@@ -3,6 +3,7 @@
 import argparse
 import os
 import os.path
+import shlex
 import signal
 import subprocess
 import sys
@@ -26,6 +27,7 @@ class TestDef():
     '''The definition of a test.'''
 
     def __init__(self, name, description, ping_output):
+        self.index = None
         self.name = name
         self.description = description
         self.ping_output = ping_output.strip().splitlines()
@@ -56,13 +58,21 @@ class TestDef():
             sys.stdout.flush()
             sys.exit()
 
+    def build_prettyping_cmdline(self):
+        return [
+            './prettyping',
+            '--pingbin', os.path.abspath(sys.argv[0]),
+            '--interval', str(SLEEP_SECONDS),
+            '--emulate_ping', str(self.index) if self.index is not None else self.name,
+        ]
+
     def run(self):
-        print(hr('BEGIN'))
         prettyping = None
+        cmdline = self.build_prettyping_cmdline()
+        print(' '.join(shlex.quote(arg) for arg in cmdline))
         try:
-            prettyping = subprocess.Popen(
-                ['./prettyping', '--pingbin', os.path.abspath(sys.argv[0]), '--interval', str(SLEEP_SECONDS), '--emulate_ping', self.name]
-            )
+            print(hr('BEGIN'))
+            prettyping = subprocess.Popen(cmdline)
             prettyping.wait()
         except KeyboardInterrupt:
             if prettyping:
@@ -152,6 +162,7 @@ def convert_global_tests_list_to_dict():
         d[t.name] = t
         d[i] = t
         d[str(i)] = t
+        t.index = i
     TESTS = d
 
 
