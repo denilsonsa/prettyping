@@ -907,4 +907,7 @@ BEGIN {
 
 	# Not needed when the output is a terminal, but does not hurt either.
 	fflush()
+}
+END {
+	other_line_is_printed()
 }'
