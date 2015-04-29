@@ -33,6 +33,11 @@ class TestDef():
         self.ping_output = ping_output.strip().splitlines()
 
     def emulate_ping(self):
+        '''Emulate the behavior of a ping binary. (i.e. mocking)
+
+        This will print predefined lines with pauses between them.
+        It will also handle Ctrl+C correctly.
+        '''
         i = iter(self.ping_output)
         try:
             for line in i:
@@ -67,6 +72,11 @@ class TestDef():
         ]
 
     def run(self):
+        '''Run the test
+
+        This will call the prettyping executable with the correct parameters.
+        '''
+
         prettyping = None
         cmdline = self.build_prettyping_cmdline()
         print(' '.join(shlex.quote(arg) for arg in cmdline))
@@ -78,14 +88,6 @@ class TestDef():
             if prettyping:
                 prettyping.wait()
         print(hr('END'))
-        # returncode = subprocess.call(
-        # with subprocess.Popen(
-        #     ['./prettyping', '--pingbin', sys.argv[0], '--emulate_ping', self.name],
-        #     bufsize=1,  # Line-buffered PIPE.
-        #     stdin=subprocess.PIPE,
-        #     universal_newlines=False,
-        # ) as prettyping:
-        #     pass
 
 
 # This starts as a list (in the source code), but is later (at runtime)
@@ -138,9 +140,7 @@ def parse_arguments():
         metavar='TEST NAME',
         action='store',
         type=str,
-        nargs='?',
-        default=None,
-        help='The test name to be emulated.'
+        help='Behaves as a mock version of ping.'
     )
     parser.add_argument(
         '-i', '--interval',
@@ -149,6 +149,13 @@ def parse_arguments():
         type=float,
         default=1,
         help='The sleep() interval before each line is printed.'
+    )
+    parser.add_argument(
+        '-t', '--test',
+        metavar='TEST NAME',
+        action='store',
+        type=str,
+        help='The test to run.'
     )
     args = parser.parse_args()
     return args
@@ -179,13 +186,18 @@ def main():
     convert_global_tests_list_to_dict()
 
     if options.emulate_ping:
+        # KeyboardInterrupt seems to be raised only when in interactive shell.
+        # If Python interpreted was launched by another script, then we need to
+        # manually set a handler for SIGINT.
         # https://stackoverflow.com/questions/974189/how-to-send-a-sigint-to-python-from-a-bash-script
         signal.signal(signal.SIGINT, raise_keyboard_interrupt)
+
         TESTS[options.emulate_ping].emulate_ping()
     else:
-        print('Normal run')
-        #TESTS['Sample test'].run()
-        TESTS[0].run()
+        if options.test is not None:
+            TESTS[options.test].run()
+        else:
+            print('-t missing')
 
 
 if __name__ == '__main__':
