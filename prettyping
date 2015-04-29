@@ -219,8 +219,16 @@ export LC_ALL=C
 
 
 # Ignore Ctrl+C here.
-# If I don't do this, this shell script is killed before
-# ping and gawk can finish their work.
+#
+# If I don't do this, this shell script is killed before ping and gawk can
+# finish their work.
+#
+# Also, I don't need to forward the signal to the ping binary, because the
+# shell/terminal already does that when the user presses Ctrl+C.
+#
+# http://www.vidarholen.net/contents/blog/?p=34
+# https://unix.stackexchange.com/a/149756
+# http://riccomini.name/posts/linux/2012-09-25-kill-subprocesses-linux-bash/
 trap '' 2
 
 # Running the ping binary and the main prettyping code.
