@@ -1,7 +1,7 @@
 prettyping
 ==========
 
-[![Donate using PayPal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=denilsonsa%40gmail%2ecom&lc=US&item_name=Denilson&item_number=prettyping&currency_code=BRL) [![Flattr this project](https://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=denilsonsa&url=https%3A%2F%2Fgithub.com%2Fdenilsonsa%2Fprettyping&title=prettyping&description=prettyping+is+a+wrapper+around+the+standard+ping+tool+with+the+objective+of+making+the+output+prettier,+more+colorful,+more+compact,+and+easier+to+read.&tags=github&category=software) [![Donate using Gratipay](https://img.shields.io/gratipay/denilsonsa.svg?label=Gratipay)](https://gratipay.com/denilsonsa/)
+[![Donate using PayPal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=denilsonsa%40gmail%2ecom&lc=US&item_name=Denilson&item_number=prettyping&currency_code=BRL) [![Flattr this project](https://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=denilsonsa&url=https%3A%2F%2Fgithub.com%2Fdenilsonsa%2Fprettyping&title=prettyping&description=prettyping+is+a+wrapper+around+the+standard+ping+tool+with+the+objective+of+making+the+output+prettier,+more+colorful,+more+compact,+and+easier+to+read.&tags=github&category=software)
 
 `prettyping` is a wrapper around the standard `ping` tool with the objective of
 making the output prettier, more colorful, more compact, and easier to read.
