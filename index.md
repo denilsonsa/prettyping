@@ -12,7 +12,7 @@ Then `prettyping` is the tool for you!
 ## Quick install and run
 
 ```
-curl -O https://github.com/denilsonsa/prettyping/raw/master/prettyping
+curl -O https://raw.githubusercontent.com/denilsonsa/prettyping/master/prettyping
 chmod +x prettyping
 ./prettyping whatever.host.you.want.to.ping
 ```
