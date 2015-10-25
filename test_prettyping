@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+# Read parse_arguments() function to understand how this script works.
+# Alternatively, run this script with --help.
+
 import argparse
 import os
 import os.path
@@ -10,11 +13,17 @@ import sys
 import textwrap
 import time
 
+OPTIONS = None
+COLOR_RESET = '\033[0m'
+COLOR_RED = '\033[0;31m'
+COLOR_GREEN = '\033[0;32m'
+COLOR_YELLOW = '\033[0;33m'
+COLOR_BLUE = '\033[0;34m'
+COLOR_MAGENTA = '\033[0;35m'
+COLOR_CYAN = '\033[0;36m'
 
-SLEEP_SECONDS = 1
 
-
-def hr(text, char='-✂-', qty=10, color_set='\033[0;36m', color_reset='\033[0m'):
+def hr(text, char='-✂-', qty=10, color_set=COLOR_CYAN, color_reset=COLOR_RESET):
     '''Returns a string padded with <char> repeated <qty> times.
 
     Also adds TTY color escapes to the string.
@@ -42,9 +51,13 @@ class TestDef():
         try:
             for line in i:
                 # The first character indicates the action.
+                # . → Insert a pause before printing the line.
+                # | → Print the line without pausing.
+                # ! → Print the line without pausing. Also marks the beginning
+                #     of the text that is printed even after Ctrl+C is pressed.
                 if line[0] == '.':
                     # Short, common pause.
-                    time.sleep(SLEEP_SECONDS)
+                    time.sleep(OPTIONS.interval)
                 elif line[0] == '|' or line[0] == '!':
                     # No pause.
                     pass
@@ -61,13 +74,12 @@ class TestDef():
                 if trailing_found:
                     sys.stdout.write(line[1:] + '\n')
             sys.stdout.flush()
-            sys.exit()
 
     def build_prettyping_cmdline(self):
         return [
             './prettyping',
             '--pingbin', os.path.abspath(sys.argv[0]),
-            '--interval', str(SLEEP_SECONDS),
+            '--interval', str(OPTIONS.interval),
             '--emulate_ping', str(self.index) if self.index is not None else self.name,
         ]
 
@@ -77,9 +89,18 @@ class TestDef():
         This will call the prettyping executable with the correct parameters.
         '''
 
-        prettyping = None
+        print(hr('DESCRIPTION'))
+        print('{color}Test #{index}:{reset} {name}'.format(
+            index=self.index, name=self.name, color=COLOR_CYAN, reset=COLOR_RESET))
+        print(self.description)
+
         cmdline = self.build_prettyping_cmdline()
         print(' '.join(shlex.quote(arg) for arg in cmdline))
+
+        if OPTIONS.wait:
+            input('Press Enter to begin the test.')
+
+        prettyping = None
         try:
             print(hr('BEGIN'))
             prettyping = subprocess.Popen(cmdline)
@@ -118,6 +139,7 @@ TESTS = [
 ''',
     ),
 ]
+TEST_NAMES = []
 
 
 def parse_arguments():
@@ -137,10 +159,22 @@ def parse_arguments():
     )
     parser.add_argument(
         '--emulate_ping',
-        metavar='TEST NAME',
+        metavar='TEST_ID',
         action='store',
         type=str,
         help='Behaves as a mock version of ping.'
+    )
+    parser.add_argument(
+        '-t', '--test',
+        metavar='TEST_ID',
+        action='store',
+        type=str,
+        help='The test to run.'
+    )
+    parser.add_argument(
+        '-a', '--all',
+        action='store_true',
+        help='Runs all tests sequentially.'
     )
     parser.add_argument(
         '-i', '--interval',
@@ -151,18 +185,17 @@ def parse_arguments():
         help='The sleep() interval before each line is printed.'
     )
     parser.add_argument(
-        '-t', '--test',
-        metavar='TEST NAME',
-        action='store',
-        type=str,
-        help='The test to run.'
+        '-w', '--wait',
+        action='store_true',
+        help='Waits for input before running a test.'
     )
     args = parser.parse_args()
     return args
 
 
 def convert_global_tests_list_to_dict():
-    global TESTS
+    global TESTS, TEST_NAMES
+    TEST_NAMES = []
     d = {}
     for i, t in enumerate(TESTS):
         # Tests can be referenced by number (zero-based index) or by name.
@@ -170,6 +203,7 @@ def convert_global_tests_list_to_dict():
         d[i] = t
         d[str(i)] = t
         t.index = i
+        TEST_NAMES.append(t.name)
     TESTS = d
 
 
@@ -178,26 +212,37 @@ def raise_keyboard_interrupt(*args):
 
 
 def main():
-    global SLEEP_SECONDS
+    global OPTIONS
+    OPTIONS = parse_arguments()
 
-    options = parse_arguments()
-
-    SLEEP_SECONDS = options.interval
     convert_global_tests_list_to_dict()
 
-    if options.emulate_ping:
+    if OPTIONS.emulate_ping:
+        if OPTIONS.all or OPTIONS.test:
+            print('Error: --emulate_ping cannot be used together with --all or --test.')
+            sys.exit(1)
+
         # KeyboardInterrupt seems to be raised only when in interactive shell.
         # If Python interpreted was launched by another script, then we need to
         # manually set a handler for SIGINT.
         # https://stackoverflow.com/questions/974189/how-to-send-a-sigint-to-python-from-a-bash-script
         signal.signal(signal.SIGINT, raise_keyboard_interrupt)
 
-        TESTS[options.emulate_ping].emulate_ping()
+        TESTS[OPTIONS.emulate_ping].emulate_ping()
     else:
-        if options.test is not None:
-            TESTS[options.test].run()
+        if OPTIONS.all and OPTIONS.test:
+            print('Error: --all and --test cannot be used together.')
+            sys.exit(1)
+
+        if OPTIONS.test:
+            TESTS[OPTIONS.test].run()
+        elif OPTIONS.all:
+            for i in range(len(TEST_NAMES)):
+                TESTS[i].run()
         else:
-            print('-t missing')
+            print('Available tests:')
+            for i, name in enumerate(TEST_NAMES):
+                print('  {0}: {1}'.format(i, name))
 
 
 if __name__ == '__main__':
