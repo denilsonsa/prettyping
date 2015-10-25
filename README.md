@@ -26,6 +26,7 @@ Requirements
    implementation)
 * `ping` (from `iputils`, or any other version that prints essentially the same
    output, like Mac OS X ping or [oping][])
+* Optional dependency on `stty` or `tput` to auto-detect the terminal size.
 
 Installation
 ------------
@@ -44,4 +45,4 @@ X), just install the `prettyping` script into `/usr/bin/`, or whatever
 directory is appropriate. No other file is necessary.
 
 [oping]: http://verplant.org/liboping/
-[prettyping]: https://github.com/denilsonsa/prettyping/raw/master/prettyping
+[prettyping]: https://raw.githubusercontent.com/denilsonsa/prettyping/master/prettyping
