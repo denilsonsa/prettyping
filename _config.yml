@@ -7,7 +7,7 @@ encoding: utf-8
 asset_path_prefix: ""
 
 project_title: "prettyping"
-project_tagline: "prettyping is a wrapper around the standard ping tool with the objective of making the output prettier, more colorful, more compact, and easier to read."
+project_tagline: "prettyping is a wrapper around the standard ping tool, making the output prettier, more colorful, more compact, and easier to read."
 github_url: https://github.com/denilsonsa/prettyping
 tar_url: https://github.com/denilsonsa/prettyping/tarball/master
 zip_url: https://github.com/denilsonsa/prettyping/zipball/master

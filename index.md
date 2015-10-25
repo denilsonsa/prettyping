@@ -5,7 +5,7 @@ Do you run `ping` tool very often? Do you find yourself squeezing your eyes to s
 
 Then `prettyping` is the tool for you!
 
-`prettyping` runs the standard `ping` in the background and parses its output, showing the ping responses in a *graphical* way at the terminal (by using colors and Unicode characters). Don't have support for UTF-8 in your terminal? No problem, you can disable it and use standard ASCII characters instead. Don't have support for colors? No problem, you can also disable them.
+`prettyping` runs the standard `ping` in background and parses its output, showing ping responses in a *graphical* way at the terminal (by using colors and Unicode characters). Don't have support for UTF-8 in your terminal? No problem, you can disable it and use standard ASCII characters instead. Don't have support for colors? No problem, you can also disable them.
 
 `prettyping` is written in `bash` and `awk`, and should work out-of-the-box in most systems (Linux, BSD, Mac OS X, …). It is self-contained in only one file, so it is trivial to install and run.
 
@@ -48,7 +48,7 @@ Animated GIF (sped up to 4×) showing what `prettyping` can do:<br>
 [YouTube demonstration by Yu-Jie Lin](https://youtu.be/ziEMY1BcikM):<br>
 <iframe width="560" height="315" src="https://www.youtube.com/embed/ziEMY1BcikM?autohide=1" frameborder="0" allowfullscreen></iframe>
 
-Very old screenshot, showing how `prettyping` looked like during in 2008:<br>
+Very old screenshot, showing how `prettyping` looked like in 2008:<br>
 ![Old screenshot of prettyping showing only the received and lost packets, but not the latency](prettyping_old.png)
 
 ## Comparison between tools
@@ -56,14 +56,14 @@ Very old screenshot, showing how `prettyping` looked like during in 2008:<br>
 |                      | [ping][iputils] | [mtr][] | [oping][] | [prettyping][] |
 |----------------------|-----------------|---------|-----------|----------------|
 | Programming language | C | C | C | bash and awk |
-| How easy to install? | Should already come with your system | Medium (C compiler + root privileges) | Medium (C compiler + ncurses + root privileges) | Trivial (just one file) |
+| How easy to install from scratch? | Should already come with your system | Medium (C compiler + root privileges) | Medium (C compiler + ncurses + root privileges) | Trivial (just one file) |
 | Requires root to install? | Yes (suid) | Yes (suid) | Yes (suid) | No (wrapper for ping, which is suid) |
 | How many hosts?      | One | All hosts in path | One or more | One |
 | Minimum ping interval | 0.2s for non-root users | 1.0s for non-root users | 0.001s | The same as `ping` or `oping` |
 | How easy to read the latency? | Precise individual values are printed, average is only printed upon exit | Statistics for each host are updated on each response, plus a non-intuitive legend for the graph | `oping`: Looks the same as `ping`<br>`noping`: Enhances the normal output with colors and live statistics and `prettyping`-inspired graphics | Statistics for each host are updated on each response, plus an intuitive and colorful graph |
 | How easy to see lost packets? | Hard (lost packages aren't printed on the Linux `ping`) | Easy (`?` at the graphic, plus listed in the statistics) | Very easy (`oping` prints missing responses, `noping` additionally shows them in the graph) | Very easy (red `!` at the graphic, plus listed in the statistics) |
 | Statistics | Only shown upon exit | Updated in real-time, considers all responses since the beginning of the run | `oping`: Only shown upon exit<br>`noping`: Updated in real-time, considers all responses since the beginning of the run | Updated in real-time, shows statistics for all responses since the beginning of the run, as well as statistics for the most recent 60 responses |
-| Redirecting output to file | Yes | No | `oping`: Yes<br>`noping`: No | Yes |
+| Can redirect output to file? | Yes | No | `oping`: Yes<br>`noping`: No | Yes |
 | Terminal behavior | Standard output | Curses full-screen app | `oping`: Standard output<br>`noping`: Curses full-screen app | Standard output with optional colors and VT100 escapes |
 | Terminal dimensions | Ignores the terminal size | Reacts immediately to the terminal size | `oping`: Ignores the terminal size<br>`noping`: Adapts to the terminal size | Adapts to the terminal size (only the future responses, the past responses are not changed) |
 
@@ -89,21 +89,26 @@ In October 2013, I discovered the [spark shell script in github][spark], which m
 
 Afterwards, it was fixed to works on multiple `awk` implementations, to work on Mac OS X (in addition to Linux). People have even made packages for some Linux distros and for Mac OS X brew.
 
-On April 2015, this tool got [its own repository on GitHub][prettyping] (it was previously on [small_scripts repository on Bitbucket][small_scripts]).
+In April 2015, this tool got [its own repository on GitHub][prettyping] (it was previously on [small_scripts repository on Bitbucket][small_scripts]).
+
+In October 2015, someone else submitted this tool to [Hacker News][hackernews1], and it managed to get to the [front page](prettyping-on-hacker-news-2015-10-22T12-40-0200.png)!
 
 ## Other interesting projects
 
 * [mtr][] - Combines the functionality of the `traceroute` and `ping`, shows responses for all hosts in the path.
-* [oping][] - `liboping` is a C library to generate ICMP echo requests; `oping` is a tool that behaves just like the standard `ping`, but detects and prints missing responses, and also allows pinging multiple hosts simultaneously; `noping` is a tool with ncurses interface with the same features as `oping`, but also highlighting the rtt value and showing live statistics. Recently, it has included the same graphical output feature as `prettyping`.
+* [oping][] - `liboping` is a C library to generate ICMP echo requests; `oping` is a tool that behaves just like the standard `ping`, but detects and prints missing responses, and also allows pinging multiple hosts simultaneously; `noping` is a tool with ncurses interface with the same features as `oping`, but also highlighting the rtt value and showing live statistics. Since [late 2014][opingpretty2], [it includes `prettyping`-inspired graphical output][opingpretty1].
 * [spark][] - Draws graphs in the shell using Unicode characters.
 
 [iputils]: http://www.skbuff.net/iputils/
 [mtr]: http://www.bitwizard.nl/mtr/
 [oping]: http://noping.cc/
+[opingpretty1]: http://anarc.at/blog/2013-12-03-announcing-prettier-noping/
+[opingpretty2]: https://github.com/octo/liboping/pull/3
 [prettyping]: https://github.com/denilsonsa/prettyping
 [PuTTY]: http://www.chiark.greenend.org.uk/~sgtatham/putty/
 [reddit1]: https://www.reddit.com/r/linux/comments/1op98a/prettypingsh_a_better_ui_for_watching_ping/
 [reddit2]: https://www.reddit.com/r/commandline/comments/1oq5nz/prettypingsh_a_better_ui_for_watching_ping/
+[hackernews1]: https://news.ycombinator.com/item?id=10429840
 [small_scripts]: http://bitbucket.org/denilsonsa/small_scripts/
 [spark]: https://github.com/holman/spark
 [Vialink]: http://www.vialink.com.br/
