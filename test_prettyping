@@ -27,6 +27,8 @@ def hr(text, char='-✂-', qty=10, color_set=COLOR_CYAN, color_reset=COLOR_RESET
     '''Returns a string padded with <char> repeated <qty> times.
 
     Also adds TTY color escapes to the string.
+
+    The name comes from HTML's <hr> element, which means horizontal rule.
     '''
     return '{pad} {color_set}{text}{color_reset} {pad}'.format(
         text=text, pad=(char * qty), color_set=color_set, color_reset=color_reset)
@@ -39,7 +41,7 @@ class TestDef():
         self.index = None
         self.name = name
         self.description = description
-        self.ping_output = ping_output.strip().splitlines()
+        self.ping_output = textwrap.dedent(ping_output).strip().splitlines()
 
     def emulate_ping(self):
         '''Emulate the behavior of a ping binary. (i.e. mocking)
@@ -117,26 +119,26 @@ TESTS = [
     TestDef(
         'Sample test',
         'First test ever written in the new testing tool.',
-'''
-|PING registro.br (200.160.2.3) 56(84) bytes of data.
-.Request timeout for icmp_seq 1
-.64 bytes from registro.br (200.160.2.3): icmp_seq=2 ttl=56 time=25.5 ms
-.64 bytes from registro.br (200.160.2.3): icmp_seq=3 ttl=56 time=55.7 ms
-.64 bytes from registro.br (200.160.2.3): icmp_seq=4 ttl=56 time=75.2 ms
-!
-|--- registro.br ping statistics ---
-|3 packets transmitted, 3 received, 0% packet loss, time 2000ms
-|rtt min/avg/max/mdev = 36.750/38.535/40.048/1.360 ms
-''',
+        '''
+            |PING registro.br (200.160.2.3) 56(84) bytes of data.
+            .Request timeout for icmp_seq 1
+            .64 bytes from registro.br (200.160.2.3): icmp_seq=2 ttl=56 time=25.5 ms
+            .64 bytes from registro.br (200.160.2.3): icmp_seq=3 ttl=56 time=55.7 ms
+            .64 bytes from registro.br (200.160.2.3): icmp_seq=4 ttl=56 time=75.2 ms
+            !
+            |--- registro.br ping statistics ---
+            |3 packets transmitted, 3 received, 0% packet loss, time 2000ms
+            |rtt min/avg/max/mdev = 36.750/38.535/40.048/1.360 ms
+        ''',
     ),
     TestDef(
         'Abrupt end of output',
         'prettyping should print the statistics and fix the cursor position.',
-'''
-|PING registro.br (200.160.2.3) 56(84) bytes of data.
-.64 bytes from registro.br (200.160.2.3): icmp_seq=1 ttl=56 time=25.5 ms
-.64 bytes from registro.br (200.160.2.3): icmp_seq=2 ttl=56 time=55.7 ms
-''',
+        '''
+            |PING registro.br (200.160.2.3) 56(84) bytes of data.
+            .64 bytes from registro.br (200.160.2.3): icmp_seq=1 ttl=56 time=25.5 ms
+            .64 bytes from registro.br (200.160.2.3): icmp_seq=2 ttl=56 time=55.7 ms
+        ''',
     ),
 ]
 TEST_NAMES = []
