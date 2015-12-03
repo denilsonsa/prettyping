@@ -113,9 +113,7 @@ class TestDef():
         print(hr('END'))
 
 
-# This starts as a list (in the source code), but is later (at runtime)
-# converted to a dict.
-TESTS = [
+TEST_LIST = [
     TestDef(
         'Sample test',
         'First test ever written in the new testing tool.',
@@ -141,7 +139,8 @@ TESTS = [
         ''',
     ),
 ]
-TEST_NAMES = []
+TEST_DICT = None
+TEST_NAMES = None
 
 
 def parse_arguments():
@@ -195,18 +194,18 @@ def parse_arguments():
     return args
 
 
-def convert_global_tests_list_to_dict():
-    global TESTS, TEST_NAMES
+def preprocess_global_test_list():
+    global TEST_LIST, TEST_DICT, TEST_NAMES
     TEST_NAMES = []
-    d = {}
-    for i, t in enumerate(TESTS):
-        # Tests can be referenced by number (zero-based index) or by name.
-        d[t.name] = t
-        d[i] = t
-        d[str(i)] = t
-        t.index = i
+    TEST_DICT = {}
+    for i, t in enumerate(TEST_LIST):
+        # Tests can be referenced by name.
+        TEST_DICT[t.name] = t
         TEST_NAMES.append(t.name)
-    TESTS = d
+        # Tests can also be referenced by number (zero-based index).
+        t.index = i
+        TEST_DICT[i] = t
+        TEST_DICT[str(i)] = t
 
 
 def raise_keyboard_interrupt(*args):
@@ -217,7 +216,7 @@ def main():
     global OPTIONS
     OPTIONS = parse_arguments()
 
-    convert_global_tests_list_to_dict()
+    preprocess_global_test_list()
 
     if OPTIONS.emulate_ping:
         if OPTIONS.all or OPTIONS.test:
@@ -225,22 +224,22 @@ def main():
             sys.exit(1)
 
         # KeyboardInterrupt seems to be raised only when in interactive shell.
-        # If Python interpreted was launched by another script, then we need to
+        # If Python interpreter was launched by another script, then we need to
         # manually set a handler for SIGINT.
         # https://stackoverflow.com/questions/974189/how-to-send-a-sigint-to-python-from-a-bash-script
         signal.signal(signal.SIGINT, raise_keyboard_interrupt)
 
-        TESTS[OPTIONS.emulate_ping].emulate_ping()
+        TEST_DICT[OPTIONS.emulate_ping].emulate_ping()
     else:
         if OPTIONS.all and OPTIONS.test:
             print('Error: --all and --test cannot be used together.')
             sys.exit(1)
 
         if OPTIONS.test:
-            TESTS[OPTIONS.test].run()
+            TEST_DICT[OPTIONS.test].run()
         elif OPTIONS.all:
             for i in range(len(TEST_NAMES)):
-                TESTS[i].run()
+                TEST_DICT[i].run()
         else:
             print('Available tests:')
             for i, name in enumerate(TEST_NAMES):
