@@ -37,10 +37,16 @@ def hr(text, char='-✂-', qty=10, color_set=COLOR_CYAN, color_reset=COLOR_RESET
 class TestDef():
     '''The definition of a test.'''
 
-    def __init__(self, name, description, ping_output):
+    def __init__(self, name, description, params, ping_output):
+        assert isinstance(name, str)
+        assert isinstance(description, str)
+        assert isinstance(params, list)
+        assert isinstance(ping_output, str)
+
         self.index = None
         self.name = name
-        self.description = description
+        self.description = textwrap.dedent(description).strip()
+        self.params = params
         self.ping_output = textwrap.dedent(ping_output).strip().splitlines()
 
     def emulate_ping(self):
@@ -53,20 +59,25 @@ class TestDef():
         try:
             for line in i:
                 # The first character indicates the action.
+                # : → Insert a pause and print nothing.
                 # . → Insert a pause before printing the line.
                 # | → Print the line without pausing.
                 # ! → Print the line without pausing. Also marks the beginning
                 #     of the text that is printed even after Ctrl+C is pressed.
-                if line[0] == '.':
+                if line[0] == ':':
                     # Short, common pause.
                     time.sleep(OPTIONS.interval)
-                elif line[0] == '|' or line[0] == '!':
-                    # No pause.
-                    pass
                 else:
-                    raise NotImplementedError('Character "{0}" is not recognized'.format(line[0]))
-                sys.stdout.write(line[1:] + '\n')
-                sys.stdout.flush()
+                    if line[0] == '.':
+                        # Short, common pause.
+                        time.sleep(OPTIONS.interval)
+                    elif line[0] == '|' or line[0] == '!':
+                        # No pause.
+                        pass
+                    else:
+                        raise NotImplementedError('Character "{0}" is not recognized'.format(line[0]))
+                    sys.stdout.write(line[1:] + '\n')
+                    sys.stdout.flush()
         except KeyboardInterrupt:
             # Skip to the trailing section.
             trailing_found = False
@@ -83,6 +94,7 @@ class TestDef():
             '--pingbin', os.path.abspath(sys.argv[0]),
             '--interval', str(OPTIONS.interval),
             '--emulate_ping', str(self.index) if self.index is not None else self.name,
+            '--terminal',
         ]
 
     def run(self):
@@ -100,23 +112,40 @@ class TestDef():
         print(' '.join(shlex.quote(arg) for arg in cmdline))
 
         if OPTIONS.wait:
+            sys.stdout.flush()
             input('Press Enter to begin the test.')
 
         prettyping = None
         try:
             print(hr('BEGIN'))
+            sys.stdout.flush()
             prettyping = subprocess.Popen(cmdline)
             prettyping.wait()
         except KeyboardInterrupt:
             if prettyping:
                 prettyping.wait()
         print(hr('END'))
+        sys.stdout.flush()
 
 
+# Note: In the tests below, the statistics are not accurate. They are not
+# relevant to the tests anyway.
 TEST_LIST = [
     TestDef(
-        'Sample test',
-        'First test ever written in the new testing tool.',
+        'Abrupt end of output',
+        'prettyping should print the statistics and fix the cursor position.',
+        [],
+        '''
+            |PING registro.br (200.160.2.3) 56(84) bytes of data.
+            .64 bytes from registro.br (200.160.2.3): icmp_seq=1 ttl=56 time=25.5 ms
+            .64 bytes from registro.br (200.160.2.3): icmp_seq=2 ttl=56 time=55.7 ms
+            .64 bytes from registro.br (200.160.2.3): icmp_seq=3 ttl=56 time=75.2 ms
+        ''',
+    ),
+    TestDef(
+        'Missing first response, explicit',
+        'Request timeout for the first response.',
+        [],
         '''
             |PING registro.br (200.160.2.3) 56(84) bytes of data.
             .Request timeout for icmp_seq 1
@@ -125,17 +154,126 @@ TEST_LIST = [
             .64 bytes from registro.br (200.160.2.3): icmp_seq=4 ttl=56 time=75.2 ms
             !
             |--- registro.br ping statistics ---
-            |3 packets transmitted, 3 received, 0% packet loss, time 2000ms
+            |4 packets transmitted, 3 received, 25% packet loss, time 2000ms
             |rtt min/avg/max/mdev = 36.750/38.535/40.048/1.360 ms
         ''',
     ),
     TestDef(
-        'Abrupt end of output',
-        'prettyping should print the statistics and fix the cursor position.',
+        'Missing first response, implicit',
+        'Request timeout for the first response.',
+        [],
+        '''
+            |PING registro.br (200.160.2.3) 56(84) bytes of data.
+            :
+            .64 bytes from registro.br (200.160.2.3): icmp_seq=2 ttl=56 time=25.5 ms
+            .64 bytes from registro.br (200.160.2.3): icmp_seq=3 ttl=56 time=55.7 ms
+            .64 bytes from registro.br (200.160.2.3): icmp_seq=4 ttl=56 time=75.2 ms
+            !
+            |--- registro.br ping statistics ---
+            |4 packets transmitted, 3 received, 25% packet loss, time 2000ms
+            |rtt min/avg/max/mdev = 36.750/38.535/40.048/1.360 ms
+        ''',
+    ),
+    TestDef(
+        'Linux ping, including domain name',
+        'Missing responses are not printed in the Linux ping. prettyping should detect them.',
+        [],
         '''
             |PING registro.br (200.160.2.3) 56(84) bytes of data.
             .64 bytes from registro.br (200.160.2.3): icmp_seq=1 ttl=56 time=25.5 ms
-            .64 bytes from registro.br (200.160.2.3): icmp_seq=2 ttl=56 time=55.7 ms
+            .64 bytes from registro.br (200.160.2.3): icmp_seq=2 ttl=56 time=55.5 ms
+            :
+            .64 bytes from registro.br (200.160.2.3): icmp_seq=4 ttl=56 time=75.5 ms
+            .64 bytes from registro.br (200.160.2.3): icmp_seq=5 ttl=56 time=99.5 ms
+            !
+            |--- registro.br ping statistics ---
+            |5 packets transmitted, 4 received, 20% packet loss, time 2000ms
+            |rtt min/avg/max/mdev = 36.750/38.535/40.048/1.360 ms
+        ''',
+    ),
+    TestDef(
+        'Linux ping, IPv4 address',
+        'Pinging a host by IP instead of by name.',
+        [],
+        '''
+            |PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.
+            .64 bytes from 8.8.8.8: icmp_seq=1 ttl=58 time=25.5 ms
+            .64 bytes from 8.8.8.8: icmp_seq=2 ttl=58 time=55.0 ms
+            :
+            .64 bytes from 8.8.8.8: icmp_seq=4 ttl=58 time=75.0 ms
+            .64 bytes from 8.8.8.8: icmp_seq=5 ttl=58 time=99.8 ms
+            !
+            |--- 8.8.8.8 ping statistics ---
+            |5 packets transmitted, 4 received, 20% packet loss, time 3004ms
+            |rtt min/avg/max/mdev = 14.831/17.375/21.520/2.528 ms
+        ''',
+    ),
+    TestDef(
+        'ping6 localhost',
+        '',
+        [],
+        '''
+            |PING localhost(ip6-localhost) 56 data bytes
+            .64 bytes from ip6-localhost: icmp_seq=1 ttl=64 time=0.028 ms
+            .64 bytes from ip6-localhost: icmp_seq=2 ttl=64 time=0.049 ms
+            :
+            .64 bytes from ip6-localhost: icmp_seq=4 ttl=64 time=0.046 ms
+            .64 bytes from ip6-localhost: icmp_seq=5 ttl=64 time=0.059 ms
+            !
+            |--- localhost ping statistics ---
+            |5 packets transmitted, 4 received, 20% packet loss, time 4999ms
+            |rtt min/avg/max/mdev = 0.028/0.046/0.059/0.011 ms
+        ''',
+    ),
+    TestDef(
+        'ping6 ::1',
+        'Pinging IPv6 localhost.',
+        [],
+        '''
+            |PING ::1(::1) 56 data bytes
+            .64 bytes from ::1: icmp_seq=1 ttl=64 time=0.107 ms
+            .64 bytes from ::1: icmp_seq=2 ttl=64 time=0.043 ms
+            :
+            .64 bytes from ::1: icmp_seq=4 ttl=64 time=0.040 ms
+            .64 bytes from ::1: icmp_seq=5 ttl=64 time=0.040 ms
+            !
+            |--- ::1 ping statistics ---
+            |5 packets transmitted, 4 received, 20% packet loss, time 1999ms
+            |rtt min/avg/max/mdev = 0.040/0.063/0.107/0.031 ms
+        ''',
+    ),
+    TestDef(
+        'oping IPv4 domain name',
+        '',
+        [],
+        '''
+            |PING registro.br (200.160.2.3) 56 bytes of data.
+            .56 bytes from registro.br (200.160.2.3): icmp_seq=1 ttl=56 time=25.17 ms
+            .56 bytes from registro.br (200.160.2.3): icmp_seq=2 ttl=56 time=55.63 ms
+            .echo reply from registro.br (200.160.2.3): icmp_seq=3 timeout
+            .56 bytes from registro.br (200.160.2.3): icmp_seq=4 ttl=56 time=75.30 ms
+            .56 bytes from registro.br (200.160.2.3): icmp_seq=5 ttl=56 time=99.94 ms
+            !
+            |--- registro.br ping statistics ---
+            |5 packets transmitted, 4 received, 20.00% packet loss, time 67.0ms
+            |RTT[ms]: min = 15, median = 16, p(95) = 18, max = 18
+        ''',
+    ),
+    TestDef(
+        'oping IPv4 address',
+        '',
+        [],
+        '''
+            |PING 8.8.8.8 (8.8.8.8) 56 bytes of data.
+            .56 bytes from 8.8.8.8 (8.8.8.8): icmp_seq=1 ttl=56 time=25.17 ms
+            .56 bytes from 8.8.8.8 (8.8.8.8): icmp_seq=2 ttl=56 time=55.63 ms
+            .echo reply from 8.8.8.8 (8.8.8.8): icmp_seq=3 timeout
+            .56 bytes from 8.8.8.8 (8.8.8.8): icmp_seq=4 ttl=56 time=75.30 ms
+            .56 bytes from 8.8.8.8 (8.8.8.8): icmp_seq=5 ttl=56 time=99.94 ms
+            !
+            |--- 8.8.8.8 ping statistics ---
+            |5 packets transmitted, 4 received, 20.00% packet loss, time 67.0ms
+            |RTT[ms]: min = 15, median = 16, p(95) = 18, max = 18
         ''',
     ),
 ]
@@ -171,6 +309,11 @@ def parse_arguments():
         action='store',
         type=str,
         help='The test to run.'
+    )
+    parser.add_argument(
+        '-l', '--list',
+        action='store_true',
+        help='Lists all available tests.'
     )
     parser.add_argument(
         '-a', '--all',
@@ -212,13 +355,23 @@ def raise_keyboard_interrupt(*args):
     raise KeyboardInterrupt()
 
 
+def list_tests():
+    for i, name in enumerate(TEST_NAMES):
+        print('  {0}: {1}'.format(i, name))
+
+
 def main():
     global OPTIONS
     OPTIONS = parse_arguments()
 
     preprocess_global_test_list()
 
-    if OPTIONS.emulate_ping:
+    if OPTIONS.list:
+        if OPTIONS.emulate_ping or OPTIONS.all or OPTIONS.test:
+            print('Error: --list cannot be used together with --emulate_ping or --all or --test.')
+            sys.exit(1)
+        list_tests()
+    elif OPTIONS.emulate_ping:
         if OPTIONS.all or OPTIONS.test:
             print('Error: --emulate_ping cannot be used together with --all or --test.')
             sys.exit(1)
@@ -242,8 +395,8 @@ def main():
                 TEST_DICT[i].run()
         else:
             print('Available tests:')
-            for i, name in enumerate(TEST_NAMES):
-                print('  {0}: {1}'.format(i, name))
+            list_tests()
+            print('Use --help to learn available options.')
 
 
 if __name__ == '__main__':

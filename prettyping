@@ -123,7 +123,6 @@ parse_arguments() {
 	RTT_MAX=auto
 
 	PING_BIN="ping"
-	#PING_BIN="./mockping.awk"
 	PING_PARAMS=( )
 
 	AWK_BIN="awk"
