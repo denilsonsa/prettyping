@@ -16,10 +16,6 @@
 
 # TODO: Adjust how many items in the legend are printed based on the terminal width.
 #
-# TODO: Detect the following kinds of message and avoid printing it repeatedly.
-# From 192.168.1.11: icmp_seq=4 Destination Host Unreachable
-# Request timeout for icmp_seq 378
-#
 # TODO: Handle when a single message is spread over multiple lines. Specially,
 # like in this case: https://bitbucket.org/denilsonsa/small_scripts/issue/5
 #
@@ -216,7 +212,7 @@ trap '' 2
 
 # Now the ugly code.
 (
-	"${PING_BIN}" "${PING_PARAMS[@]}" &
+	"${PING_BIN}" "${PING_PARAMS[@]}" 2>/dev/null &
 	PING_PID="$!"
 
 	# Commented out, because it looks like this line is not needed
