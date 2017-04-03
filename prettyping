@@ -410,8 +410,8 @@ function lost_a_packet() {
 ############################################################
 # Functions related to printing the fancy ping response
 
-# block_index, n, w, oddeven are just local variables.
-function print_response_legend(i, n, w, oddeven) {
+# block_index, n, w are just local variables.
+function print_response_legend(i, n, w) {
 	if ( ! '"${USE_LEGEND}"' ) {
 		return
 	}
@@ -420,41 +420,30 @@ function print_response_legend(i, n, w, oddeven) {
 		# escape codes, I need to jump through some hoops in order to count the
 		# position correctly.
 		w = 0
-		n = sprintf( "%4d ", 0 )
-		w += 1 + length(n)
+		n = "0 "
+		w += length(n) + 1
 
-		printf( BLOCK[0] ESC_DEFAULT n )
+		printf( n BLOCK[0] ESC_DEFAULT )
 
 		for ( i=1 ; i<BLOCK_LEN ; i++ ) {
-			# Workaround for when there is a background color change right at
-			# the edge of the screen. When it happens, the entire next line
-			# will have that background color, which is not desired.
-			if ( '"${IS_TERMINAL}"' && w == COLUMNS ) {
-				printf( "\n" )
-				w = 0
-				oddeven = ! oddeven
-				if ( oddeven ) {
-					printf( " " )
-					w++
-				}
-			}
-			n = sprintf( "%4d ", BLOCK_RTT_MIN + ceil((i-1) * BLOCK_RTT_RANGE / (BLOCK_LEN - 2)) )
-			w += 1 + length(n)
+			n = sprintf( "%d ", BLOCK_RTT_MIN + ceil((i-1) * BLOCK_RTT_RANGE / (BLOCK_LEN - 2)) )
+			w += length(n) + 1
 
 			# Avoid breaking the legend at the end of the line.
-			if ( '"${IS_TERMINAL}"' && w > COLUMNS ) {
+			# Also avoids a background color change right at
+			# the edge of the screen. (If it happens, the entire next line
+			# will have that background color, which is not desired.)
+			if ( '"${IS_TERMINAL}"' && w + 1 >= COLUMNS ) {
 				printf( "\n" )
-				w = 1 + length(n)
-				oddeven = ! oddeven
-				if ( oddeven ) {
-					printf( " " )
-					w++
-				}
+				w = length(n) + 1
+			} else {
+				printf( " " )
+				w += 1
 			}
 
-			printf( BLOCK[i] ESC_DEFAULT n )
+			printf( n BLOCK[i] ESC_DEFAULT )
 		}
-		printf( "\n" )
+		printf( " ∞\n" )
 	}
 
 	# Useful code for debugging.
