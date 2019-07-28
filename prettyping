@@ -171,7 +171,9 @@ parse_arguments() {
 	if [ ${USE_MULTICOLOR} -eq 1 -a ${INVERTED_OUTPUT} -eq 1 ]; then
 		COLOR='\033[0;31m'
 		NC='\033[0m' # No Color
-		printf "\n${COLOR}NOTE: --inverted does not play well without --nomulticolor${NC}\nMore Info: https://github.com/denilsonsa/prettyping/issues/21\n\n"
+		echo "${MYNAME}: --inverted does not play well without --nomulticolor"
+		echo "More Info: https://github.com/denilsonsa/prettyping/issues/21"
+		exit 1
 	fi
 
 	if [[ "${RTT_MIN}" -gt 0 && "${RTT_MAX}" -gt 0 && "${RTT_MIN}" -ge "${RTT_MAX}" ]] ; then
