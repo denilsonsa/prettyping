@@ -778,7 +778,7 @@ BEGIN {
 		print_statistics_bar_if_terminal()
 	} else if ( $0 ~ /^.*onnected to.*, seq=[0-9]+ time=[0-9.]+ *ms/ ) {
 		# Sample line from httping:
-		# connected to 200.149.119.168:80 (273 bytes), seq=0 time=129.86 ms 
+		# connected to 200.149.119.168:80 (273 bytes), seq=0 time=129.86 ms
 		if ( other_line_times >= 2 ) {
 			other_line_finished_repeating()
 		}
@@ -813,7 +813,7 @@ BEGIN {
 		# Do nothing on blank lines.
 	} else if ( $0 == "error shutting down ssl" ) {
 		# Common error message when using httping, ignore it.
-	} else if ( $0 ~ /^Request timeout for icmp_seq [0-9]+/ ) {
+	} else if ($0 ~ /^ping: sendto: No route to host/ || $0 ~ /^Request timeout for icmp_seq [0-9]+/) {
 		# Reply timeout is printed on Mac OS X.
 
 		if ( other_line_times >= 2 ) {
