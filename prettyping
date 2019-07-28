@@ -54,7 +54,7 @@ prettyping parameters:
   --[no]unicode    Enable/disable unicode characters. (default: enabled)
   --[no]legend     Enable/disable the latency legend. (default: enabled)
   --[no]terminal   Force the output designed to a terminal. (default: auto)
-	--inverted       Invert the output. Only works well in combination with --nomulticolor (default: disabled)
+  --inverted       Invert the output. Only works well in combination with --nomulticolor (default: disabled)
   --last <n>       Use the last "n" pings at the statistics line. (default: 60)
   --columns <n>    Override auto-detection of terminal dimensions.
   --lines <n>      Override auto-detection of terminal dimensions.
