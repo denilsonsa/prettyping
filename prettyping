@@ -149,7 +149,6 @@ parse_arguments() {
 
 			-awkbin  | --awkbin  ) AWK_BIN="$2"  ; shift ;;
 			-pingbin | --pingbin ) PING_BIN="$2" ; shift ;;
-			-6 ) PING_BIN="ping6" ;;
 
 			#TODO: Check if these parameters are numbers.
 			-last    | --last    ) LAST_N="$2"           ; shift ;;
