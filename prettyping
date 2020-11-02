@@ -81,6 +81,7 @@ parse_arguments() {
 	USE_MULTICOLOR=1
 	USE_UNICODE=1
 	USE_LEGEND=1
+	USE_STATISTICS=1
 
 	if [ -t 1 ]; then
 		IS_TERMINAL=1
@@ -144,6 +145,8 @@ parse_arguments() {
 			-nounicode    | --nounicode    ) USE_UNICODE=0 ;;
 			-legend       | --legend       ) USE_LEGEND=1 ;;
 			-nolegend     | --nolegend     ) USE_LEGEND=0 ;;
+			-statistics   | --statistics   ) USE_STATISTICS=1 ;;
+			-nostatistics | --nostatistics ) USE_STATISTICS=0 ;;
 			-terminal     | --terminal     ) IS_TERMINAL=1 ;;
 			-noterminal   | --noterminal   ) IS_TERMINAL=0 ;;
 
@@ -476,6 +479,8 @@ function print_missing_response(rtt) {
 
 # All arguments are just local variables.
 function print_overall(percentage_lost, avg_rtt) {
+	if ( '"!${USE_STATISTICS}"') return;
+
 	# Handling division by zero.
 	# Note that mawk does not consider division by zero an error, while all
 	# other awk implementations abort in such case.
@@ -506,6 +511,8 @@ function print_overall(percentage_lost, avg_rtt) {
 
 # All arguments are just local variables.
 function print_last_n(i, percentage_lost, sum, min, avg, max, diffs) {
+	if ( '"!${USE_STATISTICS}"') return;
+
 	# Calculate and print the lost packets statistics
 	sum = 0
 	for ( i=0 ; i<lastn_lost["size"] ; i++ ) {
@@ -545,6 +552,7 @@ function print_last_n(i, percentage_lost, sum, min, avg, max, diffs) {
 }
 
 function print_statistics_bar() {
+	if ( '"!${USE_STATISTICS}"') return;
 	if ( '"${IS_TERMINAL}"' ) {
 		printf( ESC_SAVEPOS ESC_DEFAULT )
 
@@ -563,6 +571,7 @@ function print_statistics_bar() {
 }
 
 function print_statistics_bar_if_terminal() {
+	if ( '"!${USE_STATISTICS}"') return;
 	if ( '"${IS_TERMINAL}"' ) {
 		print_statistics_bar()
 	}
