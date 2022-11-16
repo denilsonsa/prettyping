@@ -27,6 +27,7 @@ Requirements
 * `ping` (from `iputils`, or any other version that prints essentially the same
    output, like Mac OS X ping or [oping][])
 * Optional dependency on `stty` or `tput` to auto-detect the terminal size.
+* Optional dependency on `play` from the `sox` package to play audible pings.
 
 Installation
 ------------
