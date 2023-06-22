@@ -71,11 +71,11 @@ Very old screenshot, showing how `prettyping` looked like in 2008:<br>
 
 **I don't see the block characters, all I see are weird characters such as "â..".**
 
-Your terminal does not seem to support UTF-8. Configure your terminal correctly, switch to another terminal, or just use the `--nounicode` option. Also, [do not copy-paste the code from the browser](http://www.reddit.com/r/linux/comments/1op98a/prettypingsh_a_better_ui_for_watching_ping/ccuefny), download it instead.
+Your terminal does not seem to support UTF-8. Configure your terminal correctly, switch to another terminal, or just use the `--nounicode` option. Also, [do not copy-paste the code from the browser](https://old.reddit.com/r/linux/comments/1op98a/prettypingsh_a_better_ui_for_watching_ping/ccuefny), download it instead.
 
 **What if I am using [PuTTY][]?**
 
-Inside *Window → Translation*, set the remote character set to *UTF-8* (as in [this screenshot](http://i.imgur.com/Q7LI5MW.png) by [battery_go user on reddit](http://www.reddit.com/r/linux/comments/1op98a/prettypingsh_a_better_ui_for_watching_ping/ccueh06])).
+Inside *Window → Translation*, set the remote character set to *UTF-8* (as in [this screenshot](https://i.imgur.com/Q7LI5MW.png) by [battery_go user on reddit](https://old.reddit.com/r/linux/comments/1op98a/prettypingsh_a_better_ui_for_watching_ping/ccueh06)).
 
 ## A bit of history
 
@@ -89,7 +89,7 @@ In October 2013, I discovered the [spark shell script in github][spark], which m
 
 Afterwards, it was fixed to works on multiple `awk` implementations, to work on Mac OS X (in addition to Linux). People have even made packages for some Linux distros and for Mac OS X brew.
 
-In April 2015, this tool got [its own repository on GitHub][prettyping] (it was previously on [small_scripts repository on Bitbucket][small_scripts]).
+In April 2015, this tool got [its own repository on GitHub][prettyping] (it was previously on [small_scripts repository on GitHub][small_scripts]).
 
 In October 2015, someone else submitted this tool to [Hacker News][hackernews1], and it managed to get to the [front page](prettyping-on-hacker-news-2015-10-22T12-40-0200.png)!
 
@@ -100,15 +100,15 @@ In October 2015, someone else submitted this tool to [Hacker News][hackernews1],
 * [spark][] - Draws graphs in the shell using Unicode characters.
 
 [iputils]: http://www.skbuff.net/iputils/
-[mtr]: http://www.bitwizard.nl/mtr/
-[oping]: http://noping.cc/
-[opingpretty1]: http://anarc.at/blog/2013-12-03-announcing-prettier-noping/
+[mtr]: https://www.bitwizard.nl/mtr/
+[oping]: https://noping.cc/
+[opingpretty1]: https://anarc.at/blog/2013-12-03-announcing-prettier-noping/
 [opingpretty2]: https://github.com/octo/liboping/pull/3
 [prettyping]: https://github.com/denilsonsa/prettyping
-[PuTTY]: http://www.chiark.greenend.org.uk/~sgtatham/putty/
+[PuTTY]: https://www.chiark.greenend.org.uk/~sgtatham/putty/
 [reddit1]: https://www.reddit.com/r/linux/comments/1op98a/prettypingsh_a_better_ui_for_watching_ping/
 [reddit2]: https://www.reddit.com/r/commandline/comments/1oq5nz/prettypingsh_a_better_ui_for_watching_ping/
 [hackernews1]: https://news.ycombinator.com/item?id=10429840
-[small_scripts]: http://bitbucket.org/denilsonsa/small_scripts/
+[small_scripts]: https://github.com/denilsonsa/small_scripts/
 [spark]: https://github.com/holman/spark
-[Vialink]: http://www.vialink.com.br/
+[Vialink]: https://www.vialink.com.br/
