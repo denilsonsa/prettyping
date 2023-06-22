@@ -9,11 +9,12 @@
 # * ping (from iputils)
 #
 # More information:
-# http://denilsonsa.github.io/prettyping/
+# https://denilsonsa.github.io/prettyping/
 # https://github.com/denilsonsa/prettyping
-# http://www.reddit.com/r/linux/comments/1op98a/prettypingsh_a_better_ui_for_watching_ping/
+# https://old.reddit.com/r/linux/comments/1op98a/prettypingsh_a_better_ui_for_watching_ping/
 # Third-party demonstration video: https://www.youtube.com/watch?v=ziEMY1BcikM
 
+# TODO: Test in original-awk: https://aur.archlinux.org/packages/original-awk
 # TODO: Adjust how many items in the legend are printed based on the terminal width.
 #
 # TODO: Detect the following kinds of message and avoid printing it repeatedly.
@@ -35,7 +36,7 @@
 # TODO: Autodetect the width of printf numbers, so they will always line up correctly.
 #
 # TODO: Test the behavior of this script upon receiving out-of-order packets, like these:
-#   http://www.blug.linux.no/rfc1149/pinglogg.txt
+#   https://web.archive.org/web/20130531083142/http://www.blug.linux.no/rfc1149/pinglogg.txt
 #
 # TODO? How will prettyping behave if it receives a duplicate response?
 
@@ -75,7 +76,7 @@ EOF
 }
 
 # Thanks to people at #bash who pointed me at
-# http://bash-hackers.org/wiki/doku.php/scripting/posparams
+# https://web.archive.org/web/20100301171512/https://bash-hackers.org/wiki/doku.php/scripting/posparams
 parse_arguments() {
 	USE_COLOR=1
 	USE_MULTICOLOR=1
@@ -176,7 +177,7 @@ parse_arguments() {
 	fi
 
 	# Workaround for mawk:
-	# http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=593504
+	# https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=593504
 	local version="$(echo | "${AWK_BIN}" -W version 2>&1)"
 	if [[ "${version}" == mawk* ]] ; then
 		AWK_PARAMS+=(-W interactive)
@@ -639,8 +640,8 @@ BEGIN {
 		ESC_RED_ON_YELLOW   = "\033[43;31m"
 	}
 	# Other escape codes, see:
-	# http://en.wikipedia.org/wiki/ANSI_escape_code
-	# http://invisible-island.net/xterm/ctlseqs/ctlseqs.html
+	# https://en.wikipedia.org/wiki/ANSI_escape_code
+	# https://invisible-island.net/xterm/ctlseqs/ctlseqs.html
 	ESC_NEXTLINE     = "\n"
 	ESC_CURSORUP     = "\033[A"
 	ESC_CURSORDOWN   = "\033[B"
@@ -652,7 +653,7 @@ BEGIN {
 	ESC_UNSAVEPOS    = "\0338"
 
 	# I am avoiding these escapes as they are not listed in:
-	# http://vt100.net/docs/vt100-ug/chapter3.html
+	# https://vt100.net/docs/vt100-ug/chapter3.html
 	#ESC_PREVLINE   = "\033[F"
 	#ESC_SAVEPOS    = "\033[s"
 	#ESC_UNSAVEPOS  = "\033[u"
