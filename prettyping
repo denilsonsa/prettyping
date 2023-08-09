@@ -14,7 +14,9 @@
 # https://old.reddit.com/r/linux/comments/1op98a/prettypingsh_a_better_ui_for_watching_ping/
 # Third-party demonstration video: https://www.youtube.com/watch?v=ziEMY1BcikM
 
-# TODO: Test in original-awk: https://aur.archlinux.org/packages/original-awk
+# TODO: Test in original-awk:
+#       https://aur.archlinux.org/packages/original-awk
+#       https://sources.debian.org/src/original-awk/
 # TODO: Adjust how many items in the legend are printed based on the terminal width.
 #
 # TODO: Detect the following kinds of message and avoid printing it repeatedly.

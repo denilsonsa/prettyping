@@ -21,11 +21,11 @@ Requirements
 ------------
 
 * `bash` (tested on 4.20, should work on versions as old as 2008)
-* `awk` (either `gawk`, `mawk`, `nawk` or `busybox awk`; should work on `gawk`
-   versions as old as 2008; should probably work on any other awk
-   implementation)
+* `awk` (either [gawk][], [mawk][], [nawk][] or [busybox awk][]; should work on
+  `gawk` versions as old as 2008; should probably work on any other awk
+  implementation)
 * `ping` (from `iputils`, or any other version that prints essentially the same
-   output, like Mac OS X ping or [oping][])
+  output, like Mac OS X ping or [oping][])
 * Optional dependency on `stty` or `tput` to auto-detect the terminal size.
 
 Installation
@@ -44,5 +44,9 @@ For people building a `prettyping` package (for any Linux distro or for Mac OS
 X), just install the `prettyping` script into `/usr/bin/`, or whatever
 directory is appropriate. No other file is necessary.
 
+[gawk]: https://www.gnu.org/software/gawk/
+[mawk]: https://invisible-island.net/mawk/
+[nawk]: https://github.com/onetrueawk/awk
+[busybox awk]: https://www.busybox.net/downloads/BusyBox.html#awk
 [oping]: http://verplant.org/liboping/
 [prettyping]: https://raw.githubusercontent.com/denilsonsa/prettyping/master/prettyping
