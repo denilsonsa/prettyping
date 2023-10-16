@@ -745,7 +745,7 @@ BEGIN {
 ############################################################
 # Main loop
 {
-	if ( $0 ~ /^[0-9]+ bytes from .*: icmp_[rs]eq=[0-9]+ ttl=[0-9]+ time=[0-9.]+ *ms/ ) {
+	if ( $0 ~ /^[0-9]+ bytes from .*[:,] icmp_[rs]eq=[0-9]+ (ttl|hlim)=[0-9]+ time=[0-9.]+ *ms/ ) {
 		# Sample line from ping:
 		# 64 bytes from 8.8.8.8: icmp_seq=1 ttl=49 time=184 ms
 		if ( other_line_times >= 2 ) {
@@ -754,7 +754,7 @@ BEGIN {
 
 		# $1 = useless prefix string
 		# $2 = icmp_seq
-		# $3 = ttl
+		# $3 = ttl/hlim
 		# $4 = time
 
 		# This must be called before incrementing the last_seq variable!
@@ -781,7 +781,7 @@ BEGIN {
 		print_statistics_bar_if_terminal()
 	} else if ( $0 ~ /^.*onnected to.*, seq=[0-9]+ time=[0-9.]+ *ms/ ) {
 		# Sample line from httping:
-		# connected to 200.149.119.168:80 (273 bytes), seq=0 time=129.86 ms 
+		# connected to 200.149.119.168:80 (273 bytes), seq=0 time=129.86 ms
 		if ( other_line_times >= 2 ) {
 			other_line_finished_repeating()
 		}
