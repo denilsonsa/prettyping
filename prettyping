@@ -33,8 +33,6 @@
 #
 # TODO: Print the current time in the beginning of each line.
 #
-# TODO: Implement audible ping.
-#
 # TODO: Autodetect the width of printf numbers, so they will always line up correctly.
 #
 # TODO: Test the behavior of this script upon receiving out-of-order packets, like these:
@@ -64,10 +62,13 @@ prettyping parameters:
   --rttmax <n>     Maximum RTT represented in the unicode graph. (default: auto)
   --awkbin <exec>  Override the awk interpreter. (default: awk)
   --pingbin <exec> Override the ping tool. (default: ping)
+  --playbin <exec> Provide full path to the 'play' executable and enable audible pings
   -6               Shortcut for: --pingbin ping6
+  -a               Play audible ping, frequency based on packet latency
+                     /!\\ requires the "play" executable from the sox package!
+                     Will check for 'play' in 'path' and use it if found.
 
 ping parameters handled by prettyping:
-  -a  Audible ping is not implemented yet.
   -f  Flood mode is not allowed in prettyping.
   -q  Quiet output is not allowed in prettyping.
   -R  Record route mode is not allowed in prettyping.
@@ -84,6 +85,7 @@ parse_arguments() {
 	USE_MULTICOLOR=1
 	USE_UNICODE=1
 	USE_LEGEND=1
+    USE_SOUND=0
 
 	if [ -t 1 ]; then
 		IS_TERMINAL=1
@@ -103,6 +105,8 @@ parse_arguments() {
 
 	AWK_BIN="awk"
 	AWK_PARAMS=( )
+
+    PLAY_BIN=""
 
 	while [[ $# != 0 ]] ; do
 		case "$1" in
@@ -136,8 +140,18 @@ parse_arguments() {
 
 			# New parameters:
 			-a )
-				# TODO: Implement audible ping for responses or for missing packets
-				;;
+                PLAY_IN_PATH=`which play`
+                if [ "$?" == "0" ]
+                then
+                    USE_SOUND=1
+                    PLAY_BIN="${PLAY_IN_PATH}"
+                else
+                    echo "Audible pings could not be enabled, 'play' executable not found."
+                    echo "Check if the 'sox' package is installed and the user is able to use it"
+                    echo "If 'play' is not found in the 'path' variable, use the '-playbin' option"
+                    echo "to specify the full path to the executable (and enable audio as well)."
+                fi
+                ;;
 
 			-color        | --color        ) USE_COLOR=1 ;;
 			-nocolor      | --nocolor      ) USE_COLOR=0 ;;
@@ -152,6 +166,16 @@ parse_arguments() {
 
 			-awkbin  | --awkbin  ) AWK_BIN="$2"  ; shift ;;
 			-pingbin | --pingbin ) PING_BIN="$2" ; shift ;;
+            -playbin )
+                PLAY_BIN="$2"
+                if [ -f "${PLAY_BIN}" ]
+                then
+                    USE_SOUND=1
+                else
+                    echo "Could not find the file you specified for '-playbin', sound is disabled."
+                fi
+                shift
+                ;;
 			-6 ) PING_BIN="ping6" ;;
 
 			#TODO: Check if these parameters are numbers.
@@ -467,6 +491,16 @@ function print_received_response(rtt, block_index) {
 	}
 	printf( BLOCK[block_index] )
 	CURR_COL++
+    play_sound( rtt )
+}
+
+function play_sound(rtt, frq, CMD) {
+    if ( ! '"${USE_SOUND}"' ) {
+    	return
+    }
+    frq = 3000 - 14 * log( rtt^20 )
+    CMD = "'${PLAY_BIN}' -V0 -q -n synth 1 pl " frq " vol 1 reverb -w &"
+    system( CMD )
 }
 
 function print_missing_response(rtt) {
