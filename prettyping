@@ -57,6 +57,7 @@ prettyping parameters:
   --[no]unicode    Enable/disable unicode characters. (default: enabled)
   --[no]legend     Enable/disable the latency legend. (default: enabled)
   --[no]terminal   Force the output designed to a terminal. (default: auto)
+  --inverted       Invert the output. Only works well in combination with --nomulticolor (default: disabled)
   --last <n>       Use the last "n" pings at the statistics line. (default: 60)
   --columns <n>    Override auto-detection of terminal dimensions.
   --lines <n>      Override auto-detection of terminal dimensions.
@@ -84,6 +85,7 @@ parse_arguments() {
 	USE_MULTICOLOR=1
 	USE_UNICODE=1
 	USE_LEGEND=1
+	INVERTED_OUTPUT=0
 
 	if [ -t 1 ]; then
 		IS_TERMINAL=1
@@ -147,6 +149,7 @@ parse_arguments() {
 			-nounicode    | --nounicode    ) USE_UNICODE=0 ;;
 			-legend       | --legend       ) USE_LEGEND=1 ;;
 			-nolegend     | --nolegend     ) USE_LEGEND=0 ;;
+			-inverted     | --inverted     ) INVERTED_OUTPUT=1 ;;
 			-terminal     | --terminal     ) IS_TERMINAL=1 ;;
 			-noterminal   | --noterminal   ) IS_TERMINAL=0 ;;
 
@@ -167,6 +170,14 @@ parse_arguments() {
 		esac
 		shift
 	done
+
+	if [ ${USE_MULTICOLOR} -eq 1 -a ${INVERTED_OUTPUT} -eq 1 ]; then
+		COLOR='\033[0;31m'
+		NC='\033[0m' # No Color
+		echo "${MYNAME}: --inverted does not play well without --nomulticolor"
+		echo "More Info: https://github.com/denilsonsa/prettyping/issues/21"
+		exit 1
+	fi
 
 	if [[ "${RTT_MIN}" -gt 0 && "${RTT_MAX}" -gt 0 && "${RTT_MIN}" -ge "${RTT_MAX}" ]] ; then
 		echo "${MYNAME}: Invalid --rttmin and -rttmax values."
@@ -458,13 +469,26 @@ function print_response_legend(i, n, w) {
 
 # block_index is just a local variable.
 function print_received_response(rtt, block_index) {
-	if ( rtt < BLOCK_RTT_MIN ) {
-		block_index = 0
-	} else if ( rtt >= BLOCK_RTT_MAX ) {
-		block_index = BLOCK_LEN - 1
+
+	if ( '"${INVERTED_OUTPUT}"' ) {
+		if ( rtt < BLOCK_RTT_MIN ) {
+			block_index = int(BLOCK_LEN - 2)
+		} else if ( rtt >= BLOCK_RTT_MAX ) {
+			block_index = 0
+		} else {
+			# block_index = 1 + int((BLOCK_LEN - 2) - ((rtt - BLOCK_RTT_MIN) * (BLOCK_LEN - 2) / (BLOCK_RTT_RANGE)))
+			block_index = int((BLOCK_LEN - 2) - ((rtt - BLOCK_RTT_MIN) * (BLOCK_LEN - 2) / (BLOCK_RTT_RANGE)))
+		}
 	} else {
-		block_index = 1 + int((rtt - BLOCK_RTT_MIN) * (BLOCK_LEN - 2) / BLOCK_RTT_RANGE)
+		if ( rtt < BLOCK_RTT_MIN ) {
+			block_index = 0
+		} else if ( rtt >= BLOCK_RTT_MAX ) {
+			block_index = BLOCK_LEN - 1
+		} else {
+			block_index = 1 + int((rtt - BLOCK_RTT_MIN) * (BLOCK_LEN - 2) / BLOCK_RTT_RANGE)
+		}
 	}
+
 	printf( BLOCK[block_index] )
 	CURR_COL++
 }
