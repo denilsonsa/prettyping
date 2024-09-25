@@ -501,7 +501,7 @@ function print_global_stats(percentage_lost, avg_rtt) {
 	percentage_lost = ( lost+received > 0 ) ? (lost*100/(lost+received)) : 0
 
 	if ( '"${IS_TERMINAL}"' ) {
-		printf( "%2d/%3d (%2d%%) lost; %4.0f/" ESC_BOLD "%4.0f" ESC_DEFAULT "/%4.0fms; last: " ESC_BOLD "%4.0f" ESC_DEFAULT "ms",
+		printf( "%2d/%3d (%5.2f%%) lost; %4.0f/" ESC_BOLD "%4.0f" ESC_DEFAULT "/%4.0fms; last: " ESC_BOLD "%4.0f" ESC_DEFAULT "ms",
 			lost,
 			lost+received,
 			percentage_lost,
@@ -510,7 +510,7 @@ function print_global_stats(percentage_lost, avg_rtt) {
 			max_rtt,
 			last_rtt )
 	} else {
-		printf( "%2d/%3d (%2d%%) lost; %4.0f/" ESC_BOLD "%4.0f" ESC_DEFAULT "/%4.0fms",
+		printf( "%2d/%3d (%5.2f%%) lost; %4.0f/" ESC_BOLD "%4.0f" ESC_DEFAULT "/%4.0fms",
 			lost,
 			lost+received,
 			percentage_lost,
@@ -528,7 +528,7 @@ function print_recent_stats(i, percentage_lost, sum, min, avg, max, diffs) {
 		sum += lastn_lost[i]
 	}
 	percentage_lost = (lastn_lost["size"] > 0) ? (sum*100/lastn_lost["size"]) : 0
-	printf( "%2d/%3d (%2d%%) lost; ",
+	printf( "%2d/%3d (%5.2f%%) lost; ",
 		sum,
 		lastn_lost["size"],
 		percentage_lost )
