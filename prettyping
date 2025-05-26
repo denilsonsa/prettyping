@@ -51,19 +51,21 @@ each ping response line by a colored character, giving a very compact overview
 of the ping responses.
 
 prettyping parameters:
-  --[no]color      Enable/disable color output. (default: enabled)
-  --[no]multicolor Enable/disable multi-color unicode output. Has no effect if
-                     either color or unicode is disabled. (default: enabled)
-  --[no]unicode    Enable/disable unicode characters. (default: enabled)
-  --[no]legend     Enable/disable the latency legend. (default: enabled)
-  --[no]terminal   Force the output designed to a terminal. (default: auto)
-  --last <n>       Use the last "n" pings at the statistics line. (default: 60)
-  --columns <n>    Override auto-detection of terminal dimensions.
-  --lines <n>      Override auto-detection of terminal dimensions.
-  --rttmin <n>     Minimum RTT represented in the unicode graph. (default: auto)
-  --rttmax <n>     Maximum RTT represented in the unicode graph. (default: auto)
-  --awkbin <exec>  Override the awk interpreter. (default: awk)
-  --pingbin <exec> Override the ping tool. (default: ping)
+  --[no]color        Enable/disable color output. (default: enabled)
+  --[no]multicolor   Enable/disable multi-color unicode output. Has no effect if
+                       either color or unicode is disabled. (default: enabled)
+  --[no]unicode      Enable/disable unicode characters. (default: enabled)
+  --[no]legend       Enable/disable the latency legend. (default: enabled)
+  --[no]globalstats  Enable/disable the global statistics line. (default: enabled)
+  --[no]recentstats  Enable/disable the "last n" statistics line. (default: enabled)
+  --[no]terminal     Force the output designed to a terminal. (default: auto)
+  --last <n>         Use the last "n" pings at the statistics line. (default: 60)
+  --columns <n>      Override auto-detection of terminal dimensions.
+  --lines <n>        Override auto-detection of terminal dimensions.
+  --rttmin <n>       Minimum RTT represented in the unicode graph. (default: auto)
+  --rttmax <n>       Maximum RTT represented in the unicode graph. (default: auto)
+  --awkbin <exec>    Override the awk interpreter. (default: awk)
+  --pingbin <exec>   Override the ping tool. (default: ping)
 
 ping parameters handled by prettyping:
   -a  Audible ping is not implemented yet.
@@ -83,6 +85,8 @@ parse_arguments() {
 	USE_MULTICOLOR=1
 	USE_UNICODE=1
 	USE_LEGEND=1
+	USE_GLOBALSTATS=1
+	USE_RECENTSTATS=1
 
 	if [ -t 1 ]; then
 		IS_TERMINAL=1
@@ -138,16 +142,20 @@ parse_arguments() {
 				# TODO: Implement audible ping for responses or for missing packets
 				;;
 
-			-color        | --color        ) USE_COLOR=1 ;;
-			-nocolor      | --nocolor      ) USE_COLOR=0 ;;
-			-multicolor   | --multicolor   ) USE_MULTICOLOR=1 ;;
-			-nomulticolor | --nomulticolor ) USE_MULTICOLOR=0 ;;
-			-unicode      | --unicode      ) USE_UNICODE=1 ;;
-			-nounicode    | --nounicode    ) USE_UNICODE=0 ;;
-			-legend       | --legend       ) USE_LEGEND=1 ;;
-			-nolegend     | --nolegend     ) USE_LEGEND=0 ;;
-			-terminal     | --terminal     ) IS_TERMINAL=1 ;;
-			-noterminal   | --noterminal   ) IS_TERMINAL=0 ;;
+			-color         | --color         ) USE_COLOR=1 ;;
+			-nocolor       | --nocolor       ) USE_COLOR=0 ;;
+			-multicolor    | --multicolor    ) USE_MULTICOLOR=1 ;;
+			-nomulticolor  | --nomulticolor  ) USE_MULTICOLOR=0 ;;
+			-unicode       | --unicode       ) USE_UNICODE=1 ;;
+			-nounicode     | --nounicode     ) USE_UNICODE=0 ;;
+			-legend        | --legend        ) USE_LEGEND=1 ;;
+			-nolegend      | --nolegend      ) USE_LEGEND=0 ;;
+			-globalstats   | --globalstats   ) USE_GLOBALSTATS=1 ;;
+			-noglobalstats | --noglobalstats ) USE_GLOBALSTATS=0 ;;
+			-recentstats   | --recentstats   ) USE_RECENTSTATS=1 ;;
+			-norecentstats | --norecentstats ) USE_RECENTSTATS=0 ;;
+			-terminal      | --terminal      ) IS_TERMINAL=1 ;;
+			-noterminal    | --noterminal    ) IS_TERMINAL=0 ;;
 
 			-awkbin  | --awkbin  ) AWK_BIN="$2"  ; shift ;;
 			-pingbin | --pingbin ) PING_BIN="$2" ; shift ;;
@@ -344,12 +352,15 @@ function print_newlines_if_needed() {
 			if ( IS_PRINTING_DOTS ) {
 				printf( "\n" )
 			}
-			#printf( "\n" "\n" ESC_PREVLINE ESC_PREVLINE ESC_ERASELINE )
-			if ( LAST_N > 0 ) {
-				printf( ESC_DEFAULT "\n" "\n" ESC_CURSORUP ESC_CURSORUP ESC_ERASELINE )
-			} else {
-				printf( ESC_DEFAULT "\n" ESC_CURSORUP ESC_ERASELINE )
-			}
+
+			# Reserve the extra lines for printing the statistics.
+			if ( '"${USE_GLOBALSTATS}"'               ) { printf( ESC_DEFAULT "\n" ) }
+			if ( '"${USE_RECENTSTATS}"' && LAST_N > 0 ) { printf( ESC_DEFAULT "\n" ) }
+			if ( '"${USE_RECENTSTATS}"' && LAST_N > 0 ) { printf( ESC_CURSORUP ) }
+			if ( '"${USE_GLOBALSTATS}"'               ) { printf( ESC_CURSORUP ) }
+
+			# Erase the (new) current line, to make it clean for the next response dots.
+			printf( ESC_ERASELINE )
 		}
 	} else {
 		if ( CURR_COL >= LAST_N && LAST_N > 0 ) {
@@ -480,7 +491,7 @@ function print_missing_response(rtt) {
 # Functions related to printing statistics
 
 # All arguments are just local variables.
-function print_overall(percentage_lost, avg_rtt) {
+function print_global_stats(percentage_lost, avg_rtt) {
 	# Handling division by zero.
 	# Note that mawk does not consider division by zero an error, while all
 	# other awk implementations abort in such case.
@@ -510,7 +521,7 @@ function print_overall(percentage_lost, avg_rtt) {
 }
 
 # All arguments are just local variables.
-function print_last_n(i, percentage_lost, sum, min, avg, max, diffs) {
+function print_recent_stats(i, percentage_lost, sum, min, avg, max, diffs) {
 	# Calculate and print the lost packets statistics
 	sum = 0
 	for ( i=0 ; i<lastn_lost["size"] ; i++ ) {
@@ -553,19 +564,23 @@ function print_statistics_bar() {
 	if ( '"${IS_TERMINAL}"' ) {
 		printf( ESC_SAVEPOS ESC_DEFAULT )
 
-		printf( ESC_NEXTLINE ESC_ERASELINE )
-		print_overall()
-		if ( LAST_N > 0 ) {
+		if ( '"${USE_GLOBALSTATS}"' ) {
 			printf( ESC_NEXTLINE ESC_ERASELINE )
-			print_last_n()
+			print_global_stats()
+		}
+		if ( '"${USE_RECENTSTATS}"' && LAST_N > 0 ) {
+			printf( ESC_NEXTLINE ESC_ERASELINE )
+			print_recent_stats()
 		}
 
 		printf( ESC_UNSAVEPOS )
 	} else {
-		print_overall()
-		printf( "\n" )
-		if ( LAST_N > 0 ) {
-			print_last_n()
+		if ( '"${USE_GLOBALSTATS}"' ) {
+			print_global_stats()
+			printf( "\n" )
+		}
+		if ( '"${USE_RECENTSTATS}"' && LAST_N > 0 ) {
+			print_recent_stats()
 			printf( "\n" )
 		}
 	}
