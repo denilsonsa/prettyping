@@ -345,10 +345,14 @@ function print_newlines_if_needed() {
 				printf( "\n" )
 			}
 			#printf( "\n" "\n" ESC_PREVLINE ESC_PREVLINE ESC_ERASELINE )
-			printf( ESC_DEFAULT "\n" "\n" ESC_CURSORUP ESC_CURSORUP ESC_ERASELINE )
+			if ( LAST_N > 0 ) {
+				printf( ESC_DEFAULT "\n" "\n" ESC_CURSORUP ESC_CURSORUP ESC_ERASELINE )
+			} else {
+				printf( ESC_DEFAULT "\n" ESC_CURSORUP ESC_ERASELINE )
+			}
 		}
 	} else {
-		if ( CURR_COL >= LAST_N ) {
+		if ( CURR_COL >= LAST_N && LAST_N > 0 ) {
 			CURR_COL = 0
 			printf( ESC_DEFAULT "\n" )
 			print_statistics_bar()
@@ -551,15 +555,19 @@ function print_statistics_bar() {
 
 		printf( ESC_NEXTLINE ESC_ERASELINE )
 		print_overall()
-		printf( ESC_NEXTLINE ESC_ERASELINE )
-		print_last_n()
+		if ( LAST_N > 0 ) {
+			printf( ESC_NEXTLINE ESC_ERASELINE )
+			print_last_n()
+		}
 
 		printf( ESC_UNSAVEPOS )
 	} else {
 		print_overall()
 		printf( "\n" )
-		print_last_n()
-		printf( "\n" )
+		if ( LAST_N > 0 ) {
+			print_last_n()
+			printf( "\n" )
+		}
 	}
 }
 
