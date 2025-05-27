@@ -837,7 +837,7 @@ BEGIN {
 		# Do nothing on blank lines.
 	} else if ( $0 == "error shutting down ssl" ) {
 		# Common error message when using httping, ignore it.
-	} else if ( $0 ~ /^Request timeout for icmp_seq [0-9]+/ ) {
+	} else if ($0 ~ /^ping: sendto: No route to host/ || $0 ~ /^Request timeout for icmp_seq [0-9]+/) {
 		# Reply timeout is printed on Mac OS X.
 
 		if ( other_line_times >= 2 ) {
