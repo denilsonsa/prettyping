@@ -776,7 +776,7 @@ BEGIN {
 ############################################################
 # Main loop
 {
-	if ( $0 ~ /^[0-9]+ bytes from .*[:,] icmp_[rs]eq=[0-9]+ (ttl|hlim)=[0-9]+ time=[0-9.]+ *ms/ ) {
+	if ( $0 ~ /^[0-9]+ bytes from .*[:,] (icmp_)?[rs]eq=[0-9]+ (ttl|hlim)=[0-9]+ time=[0-9.]+ *ms/ ) {
 		# Sample line from ping:
 		# 64 bytes from 8.8.8.8: icmp_seq=1 ttl=49 time=184 ms
 		if ( other_line_times >= 2 ) {
