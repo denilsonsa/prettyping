@@ -260,7 +260,6 @@ function get_terminal_size(SIZE, SIZEA, HAS_DETECTED, CMD) {
 	HAS_DETECTED = 0
 
 	CMD = "stty -f /dev/tty size 2> /dev/null"
-
 	if ( (CMD | getline SIZE) == 1 ) {
 		split(SIZE, SIZEA, " ")
 		LINES   = int(SIZEA[1])
@@ -270,16 +269,27 @@ function get_terminal_size(SIZE, SIZEA, HAS_DETECTED, CMD) {
 	close(CMD)
 
 	if ( HAS_DETECTED == 0 ) {
-		CMD = "tput lines"
+		CMD = "tput lines 2> /dev/null"
 		if ( (CMD | getline SIZE) == 1 ) {
 			LINES = int(SIZE)
 			HAS_DETECTED = 1
 		}
 		close(CMD)
 
-		CMD = "tput cols"
+		CMD = "tput cols 2> /dev/null"
 		if ( (CMD | getline SIZE) == 1 ) {
 			COLUMNS = int(SIZE)
+			HAS_DETECTED = 1
+		}
+		close(CMD)
+	}
+
+	if ( HAS_DETECTED == 0 ) {
+		CMD = "bash -i -c \"echo \\$LINES \\$COLUMNS\" 2> /dev/null"
+		while ( (CMD | getline SIZE) == 1) {
+			split(SIZE, SIZEA, " ")
+			LINES   = int(SIZEA[1])
+			COLUMNS = int(SIZEA[2])
 			HAS_DETECTED = 1
 		}
 		close(CMD)
