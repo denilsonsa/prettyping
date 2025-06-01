@@ -813,7 +813,7 @@ BEGIN {
 
 		rtt = $0
 		sub(/.* time=/, "", rtt)
-		rtt = rtt + 0
+		rtt = rtt + 0.0
 
 		process_rtt(rtt)
 
