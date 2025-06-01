@@ -800,7 +800,7 @@ BEGIN {
 		store(lastn_lost, 0)
 
 		print_statistics_bar_if_terminal()
-	} else if ( $0 ~ /^.*onnected to.*, seq=[0-9]+ time=[0-9.]+ *ms/ ) {
+	} else if ( $0 ~ /^.*onnected to.*, seq=[0-9]+ time= *[0-9.]+ *ms/ ) {
 		# Sample line from httping:
 		# connected to 200.149.119.168:80 (273 bytes), seq=0 time=129.86 ms
 		if ( other_line_times >= 2 ) {
@@ -813,7 +813,7 @@ BEGIN {
 
 		rtt = $0
 		sub(/.* time=/, "", rtt)
-		rtt = int(rtt)
+		rtt = rtt + 0
 
 		process_rtt(rtt)
 
