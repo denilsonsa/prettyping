@@ -377,23 +377,67 @@ function print_newlines_if_needed() {
 
 # Clears the data structure.
 function clear(d) {
-	d["index"] = 0  # The next position to store a value
-	d["size"]  = 0  # The array size, goes up to LAST_N
+	split("", d)
+	d["n"] = 0 # number of vals in the window, goes up to LAST_N
+	d["avg"] = 0 # mean
+	d["s2"] = 0 # sum of squared differences from the current mean, for Welfords method
+	d["sd"] = 0 # standard deviation
+	d["min","-"] = d["min","+"] = 0 # min deque
+	d["max","-"] = d["max","+"] = 0 # max deque
+	d["vals","-"] = d["vals","+"] = 0 # vals deque
 }
 
-# This function stores the value to the passed data structure.
-# The data structure holds at most LAST_N values. When it is full,
-# a new value overwrite the oldest one.
-function store(d, value) {
-	d[d["index"]] = value
-	d["index"]++
-	if ( d["index"] >= d["size"] ) {
-		if ( d["size"] < LAST_N ) {
-			d["size"]++
-		} else {
-			d["index"] = 0
-		}
+# e.g. https://www.nayuki.io/page/sliding-window-minimum-maximum-algorithm
+function update_minmax(d, s, sign, val, oldval) {
+	# Remove vals that cannot possibly be the min or max anymore, since they have been superseded by this new val
+	while (d[s,"+"] > d[s,"-"] && (val - d[s,d[s,"+"]-1]) * sign > 0)
+		delete d[s,--d[s,"+"]]
+	# Add our new val
+	d[s,d[s,"+"]++] = val
+	# Remove an old min or max that has rolled out of the window
+	if (d[s,d[s,"-"]] == oldval)
+		delete d[s,d[s,"-"]++]
+	# Store the current min or max for easy access
+	d[s] = d[s,d[s,"-"]]
+}
+
+# Uses Welfords method for computing variance (online and numerically stable)
+# e.g. https://github.com/ajcr/rolling/blob/master/rolling/stats/variance.py
+function store(d, val,
+				oldval, delta) {
+	if (LAST_N <= 0) {
+		return
 	}
+
+	# Add new val
+	d["vals",d["vals","+"]++] = val
+	d["n"]++
+
+	# Update Welfords method with new val
+	delta = val - d["avg"]
+	d["avg"] += delta / d["n"]
+	d["s2"] += delta * (val - d["avg"])
+
+	if (d["n"] <= LAST_N) {
+		# Window is still growing, so do not need to remove the oldest val
+		oldval = "none"
+	}
+	else {
+		# Remove old val that has rolled out of the window
+		oldval = d["vals",d["vals","-"]]
+		delete d["vals",d["vals","-"]++]
+		d["n"]--
+
+		# Update Welfords method in reverse to remove old val
+		delta = oldval - d["avg"]
+		d["avg"] -= delta / d["n"]
+		d["s2"] -= delta * (oldval - d["avg"])
+	}
+
+	d["sd"] = sqrt(abs(d["s2"]) / d["n"])
+
+	update_minmax(d, "min", -1, val, oldval)
+	update_minmax(d, "max", +1, val, oldval)
 }
 
 ############################################################
@@ -520,44 +564,20 @@ function print_global_stats(percentage_lost, avg_rtt) {
 	}
 }
 
-# All arguments are just local variables.
-function print_recent_stats(i, percentage_lost, sum, min, avg, max, diffs) {
-	# Calculate and print the lost packets statistics
-	sum = 0
-	for ( i=0 ; i<lastn_lost["size"] ; i++ ) {
-		sum += lastn_lost[i]
-	}
-	percentage_lost = (lastn_lost["size"] > 0) ? (sum*100/lastn_lost["size"]) : 0
-	printf( "%2d/%3d (%2d%%) lost; ",
-		sum,
-		lastn_lost["size"],
-		percentage_lost )
-
-	# Calculate the min/avg/max rtt times
-	sum = diffs = 0
-	min = max = lastn_rtt[0]
-	for ( i=0 ; i<lastn_rtt["size"] ; i++ ) {
-		sum += lastn_rtt[i]
-		if ( lastn_rtt[i] < min ) min = lastn_rtt[i]
-		if ( lastn_rtt[i] > max ) max = lastn_rtt[i]
-	}
-	avg = (lastn_rtt["size"]) ? (sum/lastn_rtt["size"]) : 0
-
-	# Calculate mdev (mean absolute deviation)
-	for ( i=0 ; i<lastn_rtt["size"] ; i++ ) {
-		diffs += abs(lastn_rtt[i] - avg)
-	}
-	if ( lastn_rtt["size"] > 0 ) {
-		diffs /= lastn_rtt["size"]
-	}
+function print_recent_stats() {
+	# Print the lost packets statistics
+	printf( "%2.0f/%3d (%2d%%) lost; ",
+		abs(lastn_lost["avg"] * lastn_lost["n"]),
+		lastn_lost["n"],
+		abs(lastn_lost["avg"] * 100.0))
 
 	# Print the rtt statistics
 	printf( "%4.0f/" ESC_BOLD "%4.0f" ESC_DEFAULT "/%4.0f/%4.0fms (last %d)",
-		min,
-		avg,
-		max,
-		diffs,
-		lastn_rtt["size"] )
+		lastn_rtt["min"],
+		lastn_rtt["avg"],
+		lastn_rtt["max"],
+		lastn_rtt["sd"],
+		lastn_rtt["n"] )
 }
 
 function print_statistics_bar() {
@@ -779,7 +799,7 @@ BEGIN {
 		# $4 = time
 
 		# This must be called before incrementing the last_seq variable!
-		rtt = int($4)
+		rtt = $4 + 0.0
 		process_rtt(rtt)
 
 		seq = int($2)
